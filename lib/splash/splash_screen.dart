@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:news_ui_kit/onboarding/onboarding1.dart';
+import 'package:news_ui_kit/onboarding/onboarding_screen.dart';
 
 
 class SplashScreen extends StatefulWidget {
