@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'onboarding_page.dart';
 
@@ -12,6 +13,21 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
   int currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Make status bar transparent & nav bar white
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor:Color(0xFFF5F6FA),
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -63,36 +79,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true, // allows image behind status bar
       backgroundColor: const Color(0xFFF5F6FA),
-      body: SafeArea(
-        child: Column(
-          children: [
-            /// PAGE VIEW
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: pages.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  return OnboardingPage(
-                    image: pages[index]["image"]!,
-                    title: pages[index]["title"]!,
-                    description: pages[index]["desc"]!,
-                  );
-                },
-              ),
+      body: Column(
+        children: [
+          /// PAGE VIEW (Image covers status bar)
+          Expanded(
+            child: PageView.builder(
+              controller: _controller,
+              itemCount: pages.length,
+              onPageChanged: (index) {
+                setState(() {
+                  currentIndex = index;
+                });
+              },
+              itemBuilder: (context, index) {
+                return OnboardingPage(
+                  image: pages[index]["image"]!,
+                  title: pages[index]["title"]!,
+                  description: pages[index]["desc"]!,
+                );
+              },
             ),
+          ),
 
-            /// BOTTOM SECTION (Dots + Buttons)
-            Padding(
+          /// BOTTOM SECTION (Safe from gesture area)
+          SafeArea(
+            top: false,
+            child: Padding(
               padding: const EdgeInsets.only(
                 left: 24,
                 right: 24,
-                bottom: 32, 
+                bottom: 12,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -115,7 +133,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           onPressed: previousPage,
                           child: const Text(
                             "Back",
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 16,
+                            ),
                           ),
                         ),
 
@@ -126,8 +147,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 32, // wider
-                            vertical: 16,   // taller
+                            horizontal: 32,
+                            vertical: 16,
                           ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -149,8 +170,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

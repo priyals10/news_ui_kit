@@ -18,7 +18,7 @@ class OnboardingPage extends StatelessWidget {
       children: [
         /// IMAGE
         Expanded(
-          flex: 6,
+          flex: 7,
             child: Image.asset(
               image,
               fit: BoxFit.cover,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:news_ui_kit/onboarding/onboarding_screen.dart';
-
+import 'package:flutter/services.dart';
+import 'package:news_ui_kit/features/onboarding/onboarding_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -15,7 +15,16 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 2), () {
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.white, // top bar color
+        statusBarIconBrightness: Brightness.dark, // dark icons
+        systemNavigationBarColor: Colors.white, // bottom bar color
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
+
+    Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         Navigator.pushReplacement(
           context,
@@ -30,24 +39,29 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // extendBodyBehindAppBar: true, 
       backgroundColor: Colors.white,
-      body: Column(
+      body: Stack(
         children: [
-          const Spacer(flex: 1),
+          /// Full white background
+          Positioned.fill(
+            child: Container(color: Colors.white),
+          ),
 
-          Center(
+          /// Centered Logo
+          Align(
+            alignment: const Alignment(0, -0.4),
             child: Image.asset(
               'assets/images/logo.png',
               width: 270,
             ),
           ),
-
-          const Spacer(flex: 3),
         ],
       ),
     );
   }
 }
+
 
 
 
