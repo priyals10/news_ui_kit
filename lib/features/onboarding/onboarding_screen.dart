@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:news_ui_kit/features/auth/login/login_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'onboarding_page.dart';
 
@@ -63,7 +64,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      debugPrint("Navigate to Login");
+       Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LoginScreen(),
+        ),
+      );
     }
   }
 
