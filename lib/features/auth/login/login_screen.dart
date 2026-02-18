@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:news_ui_kit/features/auth/forgot_password/forgot_password_screen.dart';
 import 'package:news_ui_kit/features/auth/signup/signup_screen.dart';
 import 'package:news_ui_kit/features/auth/widgets/auth_text_field.dart';
 import 'package:news_ui_kit/features/auth/widgets/social_button.dart';
+import 'package:news_ui_kit/features/home/select_country/select_country_screen.dart';
 import 'package:flutter/services.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -34,27 +36,13 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // void validateLogin() {
-  //   setState(() {
-  //     usernameError =
-  //         usernameController.text.isEmpty ? "Invalid Username" : null;
-
-  //     passwordError =
-  //         passwordController.text.isEmpty ? "Password required" : null;
-  //   });
-
-  //   if (usernameError == null && passwordError == null) {
-  //     debugPrint("Login Successful");
-  //   }
-  // }
-
   void validateLogin() {
     setState(() {
       /// USERNAME VALIDATION
       if (usernameController.text.isEmpty) {
-       usernameError = "Username is required";
+        usernameError = "Username is required";
       } else if (usernameController.text.length < 4) {
-       usernameError = "Username must be at least 4 characters";
+        usernameError = "Username must be at least 4 characters";
       } else {
         usernameError = null;
       }
@@ -64,29 +52,35 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (password.isEmpty) {
         passwordError = "Password is required";
-      } 
-      else if (password.length < 8) {
+      } else if (password.length < 8) {
         passwordError = "Password must be at least 8 characters";
-      } 
-      else if (!RegExp(r'[A-Z]').hasMatch(password)) {
-        passwordError = "Password must contain at least 1 uppercase letter";
-      } 
-      else if (!RegExp(r'[0-9]').hasMatch(password)) {
-        passwordError = "Password must contain at least 1 number";
-      } 
-      else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
-        passwordError = "Password must contain at least 1 special character";
-      } 
-      else {
+      } else if (!RegExp(r'[A-Z]').hasMatch(password)) {
+        passwordError =
+            "Password must contain at least 1 uppercase letter";
+      } else if (!RegExp(r'[0-9]').hasMatch(password)) {
+        passwordError =
+            "Password must contain at least 1 number";
+      } else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]')
+          .hasMatch(password)) {
+        passwordError =
+            "Password must contain at least 1 special character";
+      } else {
         passwordError = null;
       }
     });
 
     if (usernameError == null && passwordError == null) {
       debugPrint("Login Successful");
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              const SelectCountryScreen(),
+        ),
+      );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -94,13 +88,14 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 40),
 
-              /// HELLO TEXT
               const Text(
                 "Hello",
                 style: TextStyle(
@@ -114,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.w900,
-                  color: const Color(0xFF1877F2),
+                  color: Color(0xFF1877F2),
                 ),
               ),
 
@@ -131,14 +126,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 40),
 
-              /// USERNAME FIELD
               AuthTextField(
                 label: "Username",
                 controller: usernameController,
                 errorText: usernameError,
               ),
 
-              /// PASSWORD FIELD
               AuthTextField(
                 label: "Password",
                 controller: passwordController,
@@ -146,20 +139,22 @@ class _LoginScreenState extends State<LoginScreen> {
                 errorText: passwordError,
               ),
 
-              /// REMEMBER + FORGOT (Moved Up Slightly)
               Transform.translate(
-                offset: const Offset(0, -10), 
+                offset: const Offset(0, -10),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
                         Checkbox(
                           value: rememberMe,
                           activeColor: Colors.blue,
-                          visualDensity: VisualDensity.compact,
+                          visualDensity:
+                              VisualDensity.compact,
                           materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
+                              MaterialTapTargetSize
+                                  .shrinkWrap,
                           onChanged: (value) {
                             setState(() {
                               rememberMe = value!;
@@ -176,13 +171,22 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const ForgotPasswordScreen(),
+                          ),
+                        );
+                      },
                       child: const Text(
                         "Forgot the password ?",
                         style: TextStyle(
                           color: Colors.blue,
                           fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                          fontWeight:
+                              FontWeight.w500,
                         ),
                       ),
                     ),
@@ -190,25 +194,28 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
 
-              const SizedBox(height: 0),
-
-              /// LOGIN BUTTON
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: validateLogin,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1877F2),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    backgroundColor:
+                        const Color(0xFF1877F2),
+                    padding:
+                        const EdgeInsets.symmetric(
+                            vertical: 18),
+                    shape:
+                        RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(8),
                     ),
                   ),
                   child: const Text(
                     "Login",
                     style: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
+                      fontWeight:
+                          FontWeight.w900,
                       color: Colors.white,
                     ),
                   ),
@@ -217,7 +224,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 15),
 
-              /// DIVIDER TEXT
               const Center(
                 child: Text(
                   "or continue with",
@@ -230,18 +236,19 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 10),
 
-              /// SOCIAL BUTTONS
               Row(
                 children: [
                   SocialButton(
                     text: "Facebook",
-                    iconPath: "assets/icons/fb.svg",
+                    iconPath:
+                        "assets/icons/fb.svg",
                     onPressed: () {},
                   ),
                   const SizedBox(width: 12),
                   SocialButton(
                     text: "Google",
-                    iconPath: "assets/icons/g.svg",
+                    iconPath:
+                        "assets/icons/g.svg",
                     onPressed: () {},
                   ),
                 ],
@@ -249,20 +256,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20),
 
-              /// SIGN UP TEXT
               Center(
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SignupScreen(),
+                        builder: (context) =>
+                            const SignupScreen(),
                       ),
                     );
                   },
                   child: RichText(
                     text: const TextSpan(
-                      text: "don’t have an account ? ",
+                      text:
+                          "don’t have an account ? ",
                       style: TextStyle(
                         color: Colors.grey,
                         fontSize: 14,
@@ -271,8 +279,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         TextSpan(
                           text: "Sign Up",
                           style: TextStyle(
-                            color: Color(0xFF1877F2),
-                            fontWeight: FontWeight.w600,
+                            color:
+                                Color(0xFF1877F2),
+                            fontWeight:
+                                FontWeight.w600,
                           ),
                         ),
                       ],
@@ -280,7 +290,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-
 
               const SizedBox(height: 40),
             ],
