@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:country_picker/country_picker.dart' as picker;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:news_ui_kit/features/home/topics/choose_topics_screen.dart';
 
 class SelectCountryScreen extends StatefulWidget {
   const SelectCountryScreen({super.key});
@@ -148,7 +149,6 @@ class _SelectCountryScreenState
                         ),
                         child: Row(
                           children: [
-                            /// Flag (Cached)
                             Container(
                               width: 40,
                               height: 28,
@@ -199,8 +199,7 @@ class _SelectCountryScreenState
                               ),
                             ),
 
-                            const SizedBox(
-                                width: 14),
+                            const SizedBox(width: 14),
 
                             Expanded(
                               child: Text(
@@ -228,32 +227,36 @@ class _SelectCountryScreenState
                 ),
               ),
 
-              /// Next Button
+              /// Next Button with Navigation
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed:
-                      selectedCountry ==
-                              null
+                      selectedCountry == null
                           ? null
                           : () {
-                              debugPrint(
-                                  "Selected: ${selectedCountry!.name}");
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      ChooseTopicsScreen(
+                                    selectedCountry:
+                                        selectedCountry!,
+                                  ),
+                                ),
+                              );
                             },
                   style:
-                      ElevatedButton
-                          .styleFrom(
+                      ElevatedButton.styleFrom(
                     backgroundColor:
-                        selectedCountry ==
-                                null
+                        selectedCountry == null
                             ? Colors
                                 .grey
                                 .shade300
                             : const Color(
                                 0xFF1877F2),
                     foregroundColor:
-                        selectedCountry ==
-                                null
+                        selectedCountry == null
                             ? Colors
                                 .grey
                                 .shade600
@@ -262,8 +265,7 @@ class _SelectCountryScreenState
                     padding:
                         const EdgeInsets
                             .symmetric(
-                                vertical:
-                                    18),
+                                vertical: 18),
                     shape:
                         RoundedRectangleBorder(
                       borderRadius:
@@ -272,22 +274,18 @@ class _SelectCountryScreenState
                                   10),
                     ),
                   ),
-                  child:
-                      const Text(
+                  child: const Text(
                     "Next",
-                    style:
-                        TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight:
-                          FontWeight
-                              .w900,
+                          FontWeight.w900,
                     ),
                   ),
                 ),
               ),
 
-              const SizedBox(
-                  height: 20),
+              const SizedBox(height: 20),
             ],
           ),
         ),
