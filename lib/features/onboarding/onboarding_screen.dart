@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:news_ui_kit/features/auth/login/login_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:news_ui_kit/core/constants/app_assets.dart';
+import 'package:news_ui_kit/core/constants/app_colors.dart';
+import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:news_ui_kit/core/constants/app_strings.dart';
+import 'package:news_ui_kit/core/theme/app_text_styles.dart';
+import 'package:news_ui_kit/core/theme/app_theme.dart';
+import 'package:news_ui_kit/core/router/app_router.dart';
 import 'onboarding_page.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -19,15 +25,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void initState() {
     super.initState();
 
-    // Make status bar transparent & nav bar white
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.light,
-        systemNavigationBarColor:Color(0xFFF5F6FA),
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
+    SystemChrome.setSystemUIOverlayStyle(AppTheme.onboardingSystemUI);
   }
 
   @override
@@ -38,19 +36,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   final List<Map<String, String>> pages = [
     {
-      "image": "assets/images/img_1.png",
+      "image": AppAssets.onboarding1,
       "title": "Lorem Ipsum is simply dummy",
       "desc":
           "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
     },
     {
-      "image": "assets/images/img_2.png",
+      "image": AppAssets.onboarding2,
       "title": "Lorem Ipsum is simply dummy",
       "desc":
           "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
     },
     {
-      "image": "assets/images/img_3.png",
+      "image": AppAssets.onboarding3,
       "title": "Lorem Ipsum is simply dummy",
       "desc":
           "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
@@ -64,12 +62,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-       Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const LoginScreen(),
-        ),
-      );
+      Navigator.pushReplacementNamed(context, AppRouter.login);
     }
   }
 
@@ -85,11 +78,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true, // allows image behind status bar
-      backgroundColor: const Color(0xFFF5F6FA),
+      extendBodyBehindAppBar: true,
+      backgroundColor: AppColors.scaffoldLight,
       body: Column(
         children: [
-          /// PAGE VIEW (Image covers status bar)
           Expanded(
             child: PageView.builder(
               controller: _controller,
@@ -109,14 +101,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
 
-          /// BOTTOM SECTION (Safe from gesture area)
           SafeArea(
             top: false,
             child: Padding(
               padding: const EdgeInsets.only(
-                left: 24,
-                right: 24,
-                bottom: 12,
+                left: AppSizes.screenPaddingH,
+                right: AppSizes.screenPaddingH,
+                bottom: AppSizes.spacingM,
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -125,8 +116,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     controller: _controller,
                     count: pages.length,
                     effect: ExpandingDotsEffect(
-                      activeDotColor: Colors.blue,
-                      dotColor: Colors.grey.shade400,
+                      activeDotColor: AppColors.primary,
+                      dotColor: AppColors.greyBorder,
                       dotHeight: 8,
                       dotWidth: 8,
                     ),
@@ -137,38 +128,26 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       if (currentIndex > 0)
                         TextButton(
                           onPressed: previousPage,
-                          child: const Text(
-                            "Back",
-                            style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 16,
-                            ),
+                          child: Text(
+                            AppStrings.back,
+                            style: AppTextStyles.greyButton,
                           ),
                         ),
 
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppSizes.spacingSM),
 
                       ElevatedButton(
                         onPressed: nextPage,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
                           padding: const EdgeInsets.symmetric(
                             horizontal: 32,
                             vertical: 16,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
                         ),
                         child: Text(
                           currentIndex == pages.length - 1
-                              ? "Get Started"
-                              : "Next",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
+                              ? AppStrings.getStarted
+                              : AppStrings.next,
                         ),
                       ),
                     ],

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:news_ui_kit/core/constants/app_colors.dart';
+import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 
 class AuthTextField extends StatefulWidget {
   final String label;
   final TextEditingController controller;
   final bool isPassword;
+  final bool isRequired;
   final String? errorText;
   final TextInputType keyboardType;
 
@@ -12,6 +16,7 @@ class AuthTextField extends StatefulWidget {
     required this.label,
     required this.controller,
     this.isPassword = false,
+    this.isRequired = true,
     this.errorText,
     this.keyboardType = TextInputType.text,
   });
@@ -34,21 +39,19 @@ class _AuthTextFieldState extends State<AuthTextField> {
         RichText(
           text: TextSpan(
             text: widget.label,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w400,
-              color: Colors.black,
-            ),
-            children: const [
-              TextSpan(
-                text: " *",
-                style: TextStyle(color: Colors.red),
-              ),
-            ],
+            style: AppTextStyles.label,
+            children: widget.isRequired
+                ? const [
+                    TextSpan(
+                      text: " *",
+                      style: TextStyle(color: AppColors.error),
+                    ),
+                  ]
+                : null,
           ),
         ),
 
-        const SizedBox(height: 6),
+        const SizedBox(height: AppSizes.spacingXS),
 
         /// Input Field
         TextField(
@@ -56,32 +59,23 @@ class _AuthTextFieldState extends State<AuthTextField> {
           keyboardType: widget.keyboardType,
           obscureText: widget.isPassword ? _obscureText : false,
           decoration: InputDecoration(
-            filled: true,
-            fillColor: Colors.white,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 16,
-            ),
-
-            /// Borders
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: hasError ? Colors.red : Colors.grey.shade400,
-              ),
-            ),
-
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: hasError ? Colors.red : Colors.blue,
-                width: 1.5,
-              ),
-            ),
+            // Use theme defaults for fill, padding, and border
+            // Override borders only when there's an error
+            enabledBorder: hasError
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                    borderSide: const BorderSide(color: AppColors.error),
+                  )
+                : null,
+            focusedBorder: hasError
+                ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                    borderSide: const BorderSide(
+                      color: AppColors.error,
+                      width: 1.5,
+                    ),
+                  )
+                : null,
 
             /// Error Text
             errorText: widget.errorText,
@@ -93,7 +87,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
                       _obscureText
                           ? Icons.visibility_off
                           : Icons.visibility,
-                      color: Colors.grey,
+                      color: AppColors.textGrey,
                     ),
                     onPressed: () {
                       setState(() {
@@ -105,7 +99,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
           ),
         ),
 
-        const SizedBox(height: 10),
+        const SizedBox(height: AppSizes.spacingS),
       ],
     );
   }

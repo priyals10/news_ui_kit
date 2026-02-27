@@ -1,55 +1,40 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:news_ui_kit/features/auth/login/login_screen.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:news_ui_kit/core/constants/app_assets.dart';
+import 'package:news_ui_kit/core/constants/app_colors.dart';
+import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:news_ui_kit/core/constants/app_strings.dart';
+import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 
 class ResetSuccessScreen extends StatelessWidget {
   const ResetSuccessScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-    );
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
           child: Column(
             children: [
               const Spacer(),
 
-              Image.asset(
-                "assets/images/logo.png",  
-                width: 250,    
-                // height: 80,            
-              ),
+              Image.asset(AppAssets.logo, width: AppSizes.successLogoWidth),
 
               const SizedBox(height: 2),
 
-              const Text(
-                "Congratulations!",
-                style: TextStyle(
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF4E4B66),
-                ),
+              Text(
+                AppStrings.congratulations,
+                style: AppTextStyles.headingMedium.copyWith(fontSize: 34),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: AppSizes.spacingS),
 
               const Text(
-                "Your account is ready to use",
+                AppStrings.accountReady,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF4E4B66),
-                ),
+                style: AppTextStyles.bodySmall,
               ),
 
               const Spacer(),
@@ -58,34 +43,17 @@ class ResetSuccessScreen extends StatelessWidget {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    /// Go to Homepage (replace with your HomeScreen)
-                    Navigator.pushAndRemoveUntil(
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
-                      ),
+                      AppRouter.login,
                       (route) => false,
                     );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1877F2),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text(
-                    "Go to Homepage",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: const Text(AppStrings.goToHomepage),
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: AppSizes.spacingXXL),
             ],
           ),
         ),

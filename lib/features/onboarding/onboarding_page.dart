@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 
 class OnboardingPage extends StatelessWidget {
   final String image;
@@ -19,11 +21,11 @@ class OnboardingPage extends StatelessWidget {
         /// IMAGE
         Expanded(
           flex: 7,
-            child: Image.asset(
-              image,
-              fit: BoxFit.cover,
-              width: double.infinity,
-            ),
+          child: Image.asset(
+            image,
+            fit: BoxFit.cover,
+            width: double.infinity,
+          ),
         ),
 
         /// TEXT SECTION
@@ -31,24 +33,20 @@ class OnboardingPage extends StatelessWidget {
           flex: 3,
           child: Padding(
             padding: const EdgeInsets.symmetric(
-                horizontal: 24, vertical: 20),
+              horizontal: AppSizes.screenPaddingH,
+              vertical: AppSizes.spacingXL,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: AppTextStyles.onboardingTitle,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: AppSizes.spacingS),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: AppTextStyles.onboardingDesc,
                 ),
               ],
             ),

@@ -1,8 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:news_ui_kit/features/auth/widgets/auth_text_field.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_ui_kit/core/constants/app_assets.dart';
+import 'package:news_ui_kit/core/constants/app_colors.dart';
+import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:news_ui_kit/core/constants/app_strings.dart';
+import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:news_ui_kit/core/theme/app_text_styles.dart';
+import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
+import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
+import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
 import 'package:news_ui_kit/features/auth/widgets/social_button.dart';
-import 'package:news_ui_kit/features/auth/login/login_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -14,212 +22,120 @@ class SignupScreen extends StatefulWidget {
 class _SignupScreenState extends State<SignupScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController =
-      TextEditingController();
-
-  String? usernameError;
-  String? passwordError;
-  String? confirmPasswordError;
+  final TextEditingController confirmPasswordController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        statusBarBrightness: Brightness.light,
-      ),
-    );
-  }
-
-  void validateSignup() {
-    setState(() {
-      if (usernameController.text.isEmpty) {
-        usernameError = "Invalid Username";
-      } else {
-        usernameError = null;
-      }
-
-      String password = passwordController.text;
-
-      if (password.isEmpty) {
-        passwordError = "Password is required";
-      } else if (password.length < 8) {
-        passwordError = "At least 8 characters required";
-      } else if (!RegExp(r'[A-Z]').hasMatch(password)) {
-        passwordError = "Must contain uppercase letter";
-      } else if (!RegExp(r'[0-9]').hasMatch(password)) {
-        passwordError = "Must contain a number";
-      } else if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
-        passwordError = "Must contain special character";
-      } else {
-        passwordError = null;
-      }
-
-      if (confirmPasswordController.text.isEmpty) {
-        confirmPasswordError = "Confirm your password";
-      } else if (confirmPasswordController.text != password) {
-        confirmPasswordError = "Passwords do not match";
-      } else {
-        confirmPasswordError = null;
-      }
-    });
-
-    if (usernameError == null &&
-        passwordError == null &&
-        confirmPasswordError == null) {
-      debugPrint("Signup Successful");
-    }
+  void dispose() {
+    usernameController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
+    return BlocProvider(
+      create: (_) => AuthBloc(),
+      child: BlocConsumer<AuthBloc, AuthState>(
+        listener: (context, state) {
+          if (state.isSuccess) {
+            debugPrint("Signup Successful");
+          }
+        },
+        builder: (context, state) {
+          return Scaffold(
+            backgroundColor: AppColors.white,
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: AppSizes.spacingHuge),
+                    const Text(AppStrings.helloExclaim, style: AppTextStyles.headingLargePrimary),
+                    const SizedBox(height: AppSizes.spacingSM),
+                    const Text(AppStrings.signupToGetStarted, style: AppTextStyles.bodyLarge),
+                    const SizedBox(height: 50),
 
-              const Text(
-                "Hello!",
-                style: TextStyle(
-                  fontSize: 42,
-                  fontWeight: FontWeight.w900,
-                  color: Color(0xFF1877F2),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              const Text(
-                "Signup to get Started",
-                style: TextStyle(
-                  fontSize: 17,
-                  color: Colors.black87,
-                ),
-              ),
-
-              const SizedBox(height: 50),
-
-              AuthTextField(
-                label: "Username",
-                controller: usernameController,
-                errorText: usernameError,
-              ),
-
-              AuthTextField(
-                label: "Password",
-                controller: passwordController,
-                isPassword: true,
-                errorText: passwordError,
-              ),
-
-              AuthTextField(
-                label: "Confirm Password",
-                controller: confirmPasswordController,
-                isPassword: true,
-                errorText: confirmPasswordError,
-              ),
-
-              const SizedBox(height: 20),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: validateSignup,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1877F2),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                    AuthTextField(
+                      label: AppStrings.username,
+                      controller: usernameController,
+                      errorText: state.usernameError,
                     ),
-                  ),
-                  child: const Text(
-                    "Sign Up",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
+
+                    AuthTextField(
+                      label: AppStrings.password,
+                      controller: passwordController,
+                      isPassword: true,
+                      errorText: state.passwordError,
                     ),
-                  ),
-                ),
-              ),
 
-              const SizedBox(height: 15),
+                    AuthTextField(
+                      label: AppStrings.confirmPassword,
+                      controller: confirmPasswordController,
+                      isPassword: true,
+                      errorText: state.confirmPasswordError,
+                    ),
 
-              const Center(
-                child: Text(
-                  "or continue with",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
+                    const SizedBox(height: AppSizes.spacingXL),
 
-              const SizedBox(height: 10),
-
-              Row(
-                children: [
-                  SocialButton(
-                    text: "Facebook",
-                    iconPath: "assets/icons/fb.svg",
-                    onPressed: () {},
-                  ),
-                  const SizedBox(width: 12),
-                  SocialButton(
-                    text: "Google",
-                    iconPath: "assets/icons/g.svg",
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              /// CLICKABLE LOGIN TEXT
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const LoginScreen(),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<AuthBloc>().add(
+                            SignupSubmitted(
+                              username: usernameController.text,
+                              password: passwordController.text,
+                              confirmPassword: confirmPasswordController.text,
+                            ),
+                          );
+                        },
+                        child: const Text(AppStrings.signUp),
                       ),
-                    );
-                  },
-                  child: RichText(
-                    text: const TextSpan(
-                      text: "Already have an account ? ",
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 14,
+                    ),
+
+                    const SizedBox(height: AppSizes.spacingMD),
+                    const Center(
+                      child: Text(
+                        AppStrings.orContinueWith,
+                        style: TextStyle(fontSize: 16, color: AppColors.textBlack),
                       ),
+                    ),
+                    const SizedBox(height: AppSizes.spacingS),
+
+                    Row(
                       children: [
-                        TextSpan(
-                          text: "Login",
-                          style: TextStyle(
-                            color: Color(0xFF1877F2),
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        SocialButton(text: AppStrings.facebook, iconPath: AppAssets.fbIcon, onPressed: () {}),
+                        const SizedBox(width: AppSizes.spacingM),
+                        SocialButton(text: AppStrings.google, iconPath: AppAssets.googleIcon, onPressed: () {}),
                       ],
                     ),
-                  ),
+
+                    const SizedBox(height: AppSizes.spacingXL),
+
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pushReplacementNamed(context, AppRouter.login),
+                        child: RichText(
+                          text: const TextSpan(
+                            text: AppStrings.alreadyHaveAccount,
+                            style: AppTextStyles.greyText,
+                            children: [
+                              TextSpan(text: AppStrings.login, style: AppTextStyles.link),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSizes.spacingHuge),
+                  ],
                 ),
               ),
-
-              const SizedBox(height: 40),
-              
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
