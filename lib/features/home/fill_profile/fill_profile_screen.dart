@@ -1,6 +1,11 @@
-import 'dart:io';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:news_ui_kit/core/constants/app_colors.dart';
+import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:news_ui_kit/core/constants/app_strings.dart';
+import 'package:news_ui_kit/core/theme/app_text_styles.dart';
+import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
 
 class FillProfileScreen extends StatefulWidget {
   const FillProfileScreen({super.key});
@@ -21,12 +26,20 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
   String? emailError;
   String? phoneError;
 
+  @override
+  void dispose() {
+    usernameController.dispose();
+    fullNameController.dispose();
+    emailController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final XFile? pickedFile = await _picker.pickImage(
       source: source,
       imageQuality: 70,
     );
-
     if (pickedFile != null) {
       setState(() {
         _profileImage = File(pickedFile.path);
@@ -38,17 +51,17 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusXXL)),
       ),
       builder: (_) {
         return Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(AppSizes.spacingXL),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text("Take Photo"),
+                title: const Text(AppStrings.takePhoto),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -56,7 +69,7 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo),
-                title: const Text("Choose from Gallery"),
+                title: const Text(AppStrings.chooseFromGallery),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -71,23 +84,19 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
 
   void _validateAndSubmit() {
     setState(() {
-      /// EMAIL VALIDATION
       if (emailController.text.isEmpty) {
-        emailError = "Email is required";
-      } else if (!RegExp(
-              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+        emailError = AppStrings.emailRequired;
+      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
           .hasMatch(emailController.text)) {
-        emailError = "Enter valid email";
+        emailError = AppStrings.invalidEmail;
       } else {
         emailError = null;
       }
 
-      /// PHONE VALIDATION
       if (phoneController.text.isEmpty) {
-        phoneError = "Phone number is required";
-      } else if (!RegExp(r'^[0-9]{10,13}$')
-          .hasMatch(phoneController.text)) {
-        phoneError = "Enter valid phone number";
+        phoneError = AppStrings.phoneRequired;
+      } else if (!RegExp(r'^[0-9]{10,13}$').hasMatch(phoneController.text)) {
+        phoneError = AppStrings.invalidPhone;
       } else {
         phoneError = null;
       }
@@ -98,81 +107,23 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     }
   }
 
-  Widget _buildLabel(String text, {bool required = false}) {
-    return RichText(
-      text: TextSpan(
-        text: text,
-        style: const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-        ),
-        children: required
-            ? const [
-                TextSpan(
-                  text: " *",
-                  style: TextStyle(color: Colors.red),
-                )
-              ]
-            : [],
-      ),
-    );
-  }
-
-  Widget _buildTextField(
-      TextEditingController controller,
-      {String? errorText,
-      TextInputType keyboardType = TextInputType.text}) {
-    return TextField(
-      controller: controller,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        errorText: errorText,
-        filled: true,
-        fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: errorText != null
-                ? Colors.red
-                : Colors.grey.shade400,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: errorText != null
-                ? Colors.red
-                : const Color(0xFF1877F2),
-            width: 1.5,
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
+      backgroundColor: AppColors.scaffoldLight,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.only(
-            left: 24,
-            right: 24,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            left: AppSizes.screenPaddingH,
+            right: AppSizes.screenPaddingH,
+            bottom: MediaQuery.of(context).viewInsets.bottom + AppSizes.spacingXL,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSizes.spacingXL),
 
-              /// Top Bar
               Row(
                 children: [
                   GestureDetector(
@@ -181,31 +132,23 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
                   ),
                   const Expanded(
                     child: Center(
-                      child: Text(
-                        "Fill your Profile",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
+                      child: Text(AppStrings.fillYourProfile, style: AppTextStyles.headingSmall),
                     ),
                   ),
                   const SizedBox(width: 24),
                 ],
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: AppSizes.spacingXXL),
 
-              /// Profile Image
               Center(
                 child: Stack(
                   children: [
                     CircleAvatar(
-                      radius: 55,
-                      backgroundColor: Colors.grey.shade300,
-                      backgroundImage: _profileImage != null
-                          ? FileImage(_profileImage!)
-                          : null,
+                      radius: AppSizes.avatarRadius,
+                      backgroundColor: AppColors.greyLight,
+                      backgroundImage:
+                          _profileImage != null ? FileImage(_profileImage!) : null,
                     ),
                     Positioned(
                       bottom: 0,
@@ -215,14 +158,10 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: const BoxDecoration(
-                            color: Color(0xFF1877F2),
+                            color: AppColors.primary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.camera_alt,
-                            size: 18,
-                            color: Colors.white,
-                          ),
+                          child: const Icon(Icons.camera_alt, size: 18, color: AppColors.white),
                         ),
                       ),
                     ),
@@ -230,61 +169,41 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: AppSizes.spacingXXL),
 
-              _buildLabel("Username"),
-              const SizedBox(height: 6),
-              _buildTextField(usernameController),
+              AuthTextField(
+                label: AppStrings.username,
+                controller: usernameController,
+                isRequired: false,
+              ),
 
-              const SizedBox(height: 16),
+              AuthTextField(
+                label: AppStrings.fullName,
+                controller: fullNameController,
+                isRequired: false,
+              ),
 
-              _buildLabel("Full Name"),
-              const SizedBox(height: 6),
-              _buildTextField(fullNameController),
-
-              const SizedBox(height: 16),
-
-              _buildLabel("Email Address", required: true),
-              const SizedBox(height: 6),
-              _buildTextField(
-                emailController,
+              AuthTextField(
+                label: AppStrings.emailAddress,
+                controller: emailController,
                 errorText: emailError,
                 keyboardType: TextInputType.emailAddress,
               ),
 
-              const SizedBox(height: 16),
-
-              _buildLabel("Phone Number", required: true),
-              const SizedBox(height: 6),
-              _buildTextField(
-                phoneController,
+              AuthTextField(
+                label: AppStrings.phoneNumber,
+                controller: phoneController,
                 errorText: phoneError,
                 keyboardType: TextInputType.phone,
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: AppSizes.spacingXXL),
 
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _validateAndSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1877F2),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    "Next",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: const Text(AppStrings.next),
                 ),
               ),
             ],

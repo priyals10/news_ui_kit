@@ -1,0 +1,33 @@
+import 'package:news_ui_kit/core/constants/app_strings.dart';
+import 'auth_result.dart';
+
+class LoginUseCase {
+  AuthResult call({required String username, required String password}) {
+    final errors = <String, String>{};
+
+    if (username.isEmpty) {
+      errors['username'] = AppStrings.usernameRequired;
+    } else if (username.length < 4) {
+      errors['username'] = AppStrings.usernameMinLength;
+    }
+
+    final pwError = _validatePassword(password);
+    if (pwError != null) errors['password'] = pwError;
+
+    if (errors.isEmpty) return AuthResult.success();
+    return AuthResult.failure(errors);
+
+   
+  }
+
+  String? _validatePassword(String password) {
+    if (password.isEmpty) return AppStrings.passwordRequired;
+    if (password.length < 8) return AppStrings.passwordMinLength;
+    if (!RegExp(r'[A-Z]').hasMatch(password)) return AppStrings.passwordUppercase;
+    if (!RegExp(r'[0-9]').hasMatch(password)) return AppStrings.passwordNumber;
+    if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(password)) {
+      return AppStrings.passwordSpecialChar;
+    }
+    return null;
+  }
+}

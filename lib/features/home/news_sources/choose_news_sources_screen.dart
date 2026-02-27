@@ -1,40 +1,41 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:news_ui_kit/features/home/fill_profile/fill_profile_screen.dart';
+﻿import 'package:flutter/material.dart';
+import 'package:news_ui_kit/core/constants/app_assets.dart';
+import 'package:news_ui_kit/core/constants/app_colors.dart';
+import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:news_ui_kit/core/constants/app_strings.dart';
+import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:news_ui_kit/core/theme/app_text_styles.dart';
+import 'package:news_ui_kit/core/widgets/app_button.dart';
+import 'package:news_ui_kit/core/widgets/app_search_field.dart';
 
 class NewsSource {
   final String name;
   final String logo;
   bool isFollowing;
 
-  NewsSource({
-    required this.name,
-    required this.logo,
-    this.isFollowing = false,
-  });
+  NewsSource({required this.name, required this.logo, this.isFollowing = false});
 }
 
 class ChooseNewsSourceScreen extends StatefulWidget {
   const ChooseNewsSourceScreen({super.key});
 
   @override
-  State<ChooseNewsSourceScreen> createState() =>
-      _ChooseNewsSourceScreenState();
+  State<ChooseNewsSourceScreen> createState() => _ChooseNewsSourceScreenState();
 }
 
 class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
   final TextEditingController searchController = TextEditingController();
 
   final List<NewsSource> sources = [
-    NewsSource(name: "CNBC", logo: "assets/logos/cnbc.png"),
-    NewsSource(name: "VICE", logo: "assets/logos/vice.png"),
-    NewsSource(name: "Vox", logo: "assets/logos/vox.png"),
-    NewsSource(name: "BBC News", logo: "assets/logos/bbc.png"),
-    NewsSource(name: "SCMP", logo: "assets/logos/scmp.png"),
-    NewsSource(name: "CNN", logo: "assets/logos/cnn.png"),
-    NewsSource(name: "MSN", logo: "assets/logos/msn.png"),
-    NewsSource(name: "CNET", logo: "assets/logos/cnet.png"),
-    NewsSource(name: "USA Today", logo: "assets/logos/usa_today.png"),
+    NewsSource(name: "CNBC", logo: AppAssets.cnbc),
+    NewsSource(name: "VICE", logo: AppAssets.vice),
+    NewsSource(name: "Vox", logo: AppAssets.vox),
+    NewsSource(name: "BBC News", logo: AppAssets.bbc),
+    NewsSource(name: "SCMP", logo: AppAssets.scmp),
+    NewsSource(name: "CNN", logo: AppAssets.cnn),
+    NewsSource(name: "MSN", logo: AppAssets.msn),
+    NewsSource(name: "CNET", logo: AppAssets.cnet),
+    NewsSource(name: "USA Today", logo: AppAssets.usaToday),
   ];
 
   List<NewsSource> filteredSources = [];
@@ -58,17 +59,22 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
   bool get hasSelection => sources.any((s) => s.isFollowing);
 
   @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingHSmall),
           child: Column(
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSizes.spacingXL),
 
-              /// Top Bar
               Row(
                 children: [
                   GestureDetector(
@@ -78,11 +84,8 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                   const Expanded(
                     child: Center(
                       child: Text(
-                        "Choose your News Sources",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w700,
-                        ),
+                        AppStrings.chooseYourNewsSources,
+                        style: AppTextStyles.headingSmall,
                       ),
                     ),
                   ),
@@ -90,46 +93,25 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                 ],
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSizes.spacingXL),
 
-              /// Search
-              Container(
+              AppSearchField(
+                controller: searchController,
+                borderColor: AppColors.primary,
+                borderRadius: AppSizes.radiusXL,
                 height: 55,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF1877F2)),
-                ),
-                child: TextField(
-                  controller: searchController,
-                  decoration: InputDecoration(
-                    hintText: "Search",
-                    border: InputBorder.none,
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.all(14),
-                      child: SvgPicture.asset(
-                        "assets/icons/search.svg",
-                        width: 20,
-                      ),
-                    ),
-                  ),
-                ),
               ),
 
               const SizedBox(height: 25),
 
-              /// Grid
               Expanded(
                 child: GridView.builder(
-                  padding: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.only(bottom: AppSizes.spacingXL),
                   itemCount: filteredSources.length,
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 20,
+                    crossAxisSpacing: AppSizes.spacingL,
+                    mainAxisSpacing: AppSizes.spacingXL,
                     mainAxisExtent: 210,
                   ),
                   itemBuilder: (context, index) {
@@ -140,8 +122,8 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: const Color(0xFFFAFAFA),
-                            borderRadius: BorderRadius.circular(20),
+                            color: AppColors.cardBg,
+                            borderRadius: BorderRadius.circular(AppSizes.radiusXXL),
                           ),
                           child: Column(
                             children: [
@@ -149,8 +131,8 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                                 width: double.infinity,
                                 height: 95,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFEEF1F4),
-                                  borderRadius: BorderRadius.circular(20),
+                                  color: AppColors.cardInner,
+                                  borderRadius: BorderRadius.circular(AppSizes.radiusXXL),
                                 ),
                                 child: Center(
                                   child: ClipOval(
@@ -163,16 +145,9 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 12),
-                              Text(
-                                source.name,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: AppSizes.spacingM),
+                              Text(source.name, textAlign: TextAlign.center, style: AppTextStyles.sourceName),
+                              const SizedBox(height: AppSizes.spacingM),
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
@@ -181,28 +156,18 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                                 },
                                 child: Container(
                                   width: 95,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 8),
+                                  padding: const EdgeInsets.symmetric(vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: source.isFollowing
-                                        ? const Color(0xFF1877F2)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: const Color(0xFF1877F2)),
+                                    color: source.isFollowing ? AppColors.primary : AppColors.white,
+                                    borderRadius: BorderRadius.circular(AppSizes.radiusL),
+                                    border: Border.all(color: AppColors.primary),
                                   ),
                                   child: Center(
                                     child: Text(
-                                      source.isFollowing
-                                          ? "Following"
-                                          : "Follow",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: source.isFollowing
-                                            ? Colors.white
-                                            : const Color(0xFF1877F2),
-                                      ),
+                                      source.isFollowing ? AppStrings.following : AppStrings.follow,
+                                      style: source.isFollowing
+                                          ? AppTextStyles.followingButton
+                                          : AppTextStyles.followButton,
                                     ),
                                   ),
                                 ),
@@ -216,45 +181,15 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                 ),
               ),
 
-              /// Next Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: hasSelection
-                    ? () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const FillProfileScreen(),
-                        ),
-                      );
-                    }
-                  : null,
-
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: hasSelection
-                        ? const Color(0xFF1877F2)
-                        : Colors.grey.shade300,
-                    foregroundColor:
-                        hasSelection ? Colors.white : Colors.grey.shade600,
-                    elevation: 0,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Text(
-                    "Next",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ),
+              AppButton(
+                text: AppStrings.next,
+                isEnabled: hasSelection,
+                onPressed: () {
+                  Navigator.pushNamed(context, AppRouter.fillProfile);
+                },
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSizes.spacingXL),
             ],
           ),
         ),
