@@ -7,6 +7,7 @@ import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
+import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
@@ -20,13 +21,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool rememberMe = true;
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -34,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthBloc(),
+      create: (_) => AuthBloc(AuthRepository()),
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.isSuccess) {
@@ -58,9 +59,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SizedBox(height: AppSizes.spacingHuge),
 
                     AuthTextField(
-                      label: AppStrings.username,
-                      controller: usernameController,
-                      errorText: state.usernameError,
+                      label: AppStrings.email,
+                      controller: emailController,
+                      errorText: state.emailError,
                     ),
 
                     AuthTextField(
@@ -108,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () {
                           context.read<AuthBloc>().add(
                             LoginSubmitted(
-                              username: usernameController.text,
+                              email: emailController.text,
                               password: passwordController.text,
                             ),
                           );

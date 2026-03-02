@@ -7,6 +7,7 @@ import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
+import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
@@ -20,13 +21,13 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
@@ -35,11 +36,11 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthBloc(),
+      create: (_) => AuthBloc(AuthRepository()),
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.isSuccess) {
-            debugPrint("Signup Successful");
+            Navigator.pushReplacementNamed(context, AppRouter.login);
           }
         },
         builder: (context, state) {
@@ -58,9 +59,9 @@ class _SignupScreenState extends State<SignupScreen> {
                     const SizedBox(height: 50),
 
                     AuthTextField(
-                      label: AppStrings.username,
-                      controller: usernameController,
-                      errorText: state.usernameError,
+                      label: AppStrings.email,
+                      controller: emailController,
+                      errorText: state.emailError,
                     ),
 
                     AuthTextField(
@@ -85,7 +86,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         onPressed: () {
                           context.read<AuthBloc>().add(
                             SignupSubmitted(
-                              username: usernameController.text,
+                              email: emailController.text,
                               password: passwordController.text,
                               confirmPassword: confirmPasswordController.text,
                             ),

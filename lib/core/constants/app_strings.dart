@@ -26,6 +26,7 @@ class AppStrings {
   static const String forgotPasswordTitle = "Forgot\nPassword ?";
   static const String forgotPasswordDesc =
       "Don't worry! It happens. Please enter the\naddress associated with your account.";
+  static const String email = "Email";
   static const String emailOrMobile = "Email ID / Mobile number";
 
   // OTP
