@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.isSuccess) {
-            Navigator.pushReplacementNamed(context, AppRouter.selectCountry);
+            Navigator.pushReplacementNamed(context, AppRouter.tempHome);
           }
         },
         builder: (context, state) {

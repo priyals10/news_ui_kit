@@ -140,7 +140,11 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
                 text: AppStrings.next,
                 isEnabled: selectedTopics.isNotEmpty,
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.chooseNewsSources);
+                  Navigator.pushNamed(
+                    context,
+                    AppRouter.chooseNewsSources,
+                    arguments: widget.selectedCountry.name,
+                  );
                 },
               ),
 

@@ -185,7 +185,12 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                 text: AppStrings.next,
                 isEnabled: hasSelection,
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.fillProfile);
+                  final country = ModalRoute.of(context)?.settings.arguments as String? ?? '';
+                  Navigator.pushNamed(
+                    context,
+                    AppRouter.fillProfile,
+                    arguments: country,
+                  );
                 },
               ),
 

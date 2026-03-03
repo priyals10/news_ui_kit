@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_theme.dart';
 
@@ -23,7 +24,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRouter.onboarding);
+        final isLoggedIn = FirebaseAuth.instance.currentUser != null;
+        Navigator.pushReplacementNamed(
+          context,
+          isLoggedIn ? AppRouter.tempHome : AppRouter.onboarding,
+        );
       }
     });
   }

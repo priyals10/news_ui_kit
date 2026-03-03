@@ -13,6 +13,7 @@ import 'package:news_ui_kit/features/home/select_country/select_country_screen.d
 import 'package:news_ui_kit/features/home/topics/choose_topics_screen.dart';
 import 'package:news_ui_kit/features/home/news_sources/choose_news_sources_screen.dart';
 import 'package:news_ui_kit/features/home/fill_profile/fill_profile_screen.dart';
+import 'package:news_ui_kit/features/home/temp_home_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -30,6 +31,7 @@ class AppRouter {
   static const String chooseTopics = '/choose-topics';
   static const String chooseNewsSources = '/choose-news-sources';
   static const String fillProfile = '/fill-profile';
+  static const String tempHome = '/temp-home';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -66,17 +68,20 @@ class AppRouter {
         return _buildRoute(ChooseTopicsScreen(selectedCountry: country));
 
       case chooseNewsSources:
-        return _buildRoute(const ChooseNewsSourceScreen());
+        return _buildRoute(const ChooseNewsSourceScreen(), settings: settings);
 
       case fillProfile:
-        return _buildRoute(const FillProfileScreen());
+        return _buildRoute(const FillProfileScreen(), settings: settings);
+
+      case tempHome:
+        return _buildRoute(const TempHomeScreen());
 
       default:
         return _buildRoute(const SplashScreen());
     }
   }
 
-  static MaterialPageRoute _buildRoute(Widget page) {
-    return MaterialPageRoute(builder: (_) => page);
+  static MaterialPageRoute _buildRoute(Widget page, {RouteSettings? settings}) {
+    return MaterialPageRoute(builder: (_) => page, settings: settings);
   }
 }

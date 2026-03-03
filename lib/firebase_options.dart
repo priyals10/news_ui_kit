@@ -41,49 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAOX2emKYSPpYpldqKwtEhjywuB71jCO28',
-    appId: '1:23764328842:web:f8b16a9f1285c7d6e62873',
-    messagingSenderId: '23764328842',
-    projectId: 'news-ui-kit',
-    authDomain: 'news-ui-kit.firebaseapp.com',
-    storageBucket: 'news-ui-kit.firebasestorage.app',
-    measurementId: 'G-73ZMNEK16H',
+    apiKey: 'AIzaSyAyIESdjjqKcG2yjZsyZ5iKD9LiMp-_T4o',
+    appId: '1:933114366375:web:320134b3b9ea71d0dc0e82',
+    messagingSenderId: '933114366375',
+    projectId: 'news-kit-demo',
+    authDomain: 'news-kit-demo.firebaseapp.com',
+    storageBucket: 'news-kit-demo.firebasestorage.app',
+    measurementId: 'G-Y3B6T4B2QM',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCUIsRf-zCGs3YqGVTdeuYy_v66EH_nXy4',
-    appId: '1:23764328842:ios:81cd02e5507af04fe62873',
-    messagingSenderId: '23764328842',
-    projectId: 'news-ui-kit',
-    storageBucket: 'news-ui-kit.firebasestorage.app',
+    apiKey: 'AIzaSyDeKFpZV30xzFZYEb5x7_tBhBqDcv_dzZA',
+    appId: '1:933114366375:ios:63479ef605ac33cfdc0e82',
+    messagingSenderId: '933114366375',
+    projectId: 'news-kit-demo',
+    storageBucket: 'news-kit-demo.firebasestorage.app',
     iosBundleId: 'com.example.newsUiKit',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCUIsRf-zCGs3YqGVTdeuYy_v66EH_nXy4',
-    appId: '1:23764328842:ios:81cd02e5507af04fe62873',
-    messagingSenderId: '23764328842',
-    projectId: 'news-ui-kit',
-    storageBucket: 'news-ui-kit.firebasestorage.app',
+    apiKey: 'AIzaSyDeKFpZV30xzFZYEb5x7_tBhBqDcv_dzZA',
+    appId: '1:933114366375:ios:63479ef605ac33cfdc0e82',
+    messagingSenderId: '933114366375',
+    projectId: 'news-kit-demo',
+    storageBucket: 'news-kit-demo.firebasestorage.app',
     iosBundleId: 'com.example.newsUiKit',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyAOX2emKYSPpYpldqKwtEhjywuB71jCO28',
-    appId: '1:23764328842:web:e6a6a6b5678b06dae62873',
-    messagingSenderId: '23764328842',
-    projectId: 'news-ui-kit',
-    authDomain: 'news-ui-kit.firebaseapp.com',
-    storageBucket: 'news-ui-kit.firebasestorage.app',
-    measurementId: 'G-E2RHS13FQX',
+    apiKey: 'AIzaSyAyIESdjjqKcG2yjZsyZ5iKD9LiMp-_T4o',
+    appId: '1:933114366375:web:bb3dd42ab7639725dc0e82',
+    messagingSenderId: '933114366375',
+    projectId: 'news-kit-demo',
+    authDomain: 'news-kit-demo.firebaseapp.com',
+    storageBucket: 'news-kit-demo.firebasestorage.app',
+    measurementId: 'G-N5D5WHJ9E7',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAgXQWLyZn6_r0i1cgHQ95L1QNbsOyJius',
-    appId: '1:23764328842:android:bd19718829883b35e62873',
-    messagingSenderId: '23764328842',
-    projectId: 'news-ui-kit',
-    storageBucket: 'news-ui-kit.firebasestorage.app',
+    apiKey: 'AIzaSyBESFnxg983s7HOe1OQmEZlN1NXASWo0kg',
+    appId: '1:933114366375:android:d530cb1aadfbccb5dc0e82',
+    messagingSenderId: '933114366375',
+    projectId: 'news-kit-demo',
+    storageBucket: 'news-kit-demo.firebasestorage.app',
   );
 
 }
