@@ -8,6 +8,8 @@ class UserModel {
   final String phone;
   final String country;
   final String photoUrl;
+  final String bio;
+  final String website;
   final DateTime createdAt;
 
   UserModel({
@@ -18,6 +20,8 @@ class UserModel {
     this.phone = '',
     this.country = '',
     this.photoUrl = '',
+    this.bio = '',
+    this.website = '',
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
@@ -30,6 +34,8 @@ class UserModel {
       'phone': phone,
       'country': country,
       'photoUrl': photoUrl,
+      'bio': bio,
+      'website': website,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -43,6 +49,8 @@ class UserModel {
       phone: map['phone'] ?? '',
       country: map['country'] ?? '',
       photoUrl: map['photoUrl'] ?? '',
+      bio: map['bio'] ?? '',
+      website: map['website'] ?? '',
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }

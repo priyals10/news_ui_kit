@@ -52,9 +52,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSizes.spacingMD),
-                    const Text(AppStrings.forgotPasswordTitle, style: AppTextStyles.headingMedium),
+                    Text(AppStrings.forgotPasswordTitle, style: AppTextStyles.headingMedium(context)),
                     const SizedBox(height: AppSizes.spacingM),
-                    const Text(AppStrings.forgotPasswordDesc, style: AppTextStyles.bodyMedium),
+                    Text(AppStrings.forgotPasswordDesc, style: AppTextStyles.bodyMedium(context)),
                     const SizedBox(height: AppSizes.spacingXL),
 
                     AuthTextField(

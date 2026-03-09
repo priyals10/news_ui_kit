@@ -57,7 +57,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
             children: [
               const SizedBox(height: AppSizes.spacingXL),
 
-              const Text(AppStrings.selectYourCountry, style: AppTextStyles.headingSmall),
+              Text(AppStrings.selectYourCountry, style: AppTextStyles.headingSmall(context)),
 
               const SizedBox(height: AppSizes.spacingXL),
 
@@ -119,8 +119,8 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                               child: Text(
                                 country.name,
                                 style: isSelected
-                                    ? AppTextStyles.listItemSelected
-                                    : AppTextStyles.listItem,
+                                  ? AppTextStyles.listItemSelected(context)
+                                  : AppTextStyles.listItem(context),
                               ),
                             ),
                           ],

@@ -50,7 +50,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSizes.spacingXL),
-                    const Text(AppStrings.resetPasswordTitle, style: AppTextStyles.headingMedium),
+                    Text(AppStrings.resetPasswordTitle, style: AppTextStyles.headingMedium(context)),
                     const SizedBox(height: AppSizes.spacingXXL),
 
                     AuthTextField(

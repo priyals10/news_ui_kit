@@ -81,11 +81,11 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                     onTap: () => Navigator.pop(context),
                     child: const Icon(Icons.arrow_back),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Center(
                       child: Text(
                         AppStrings.chooseYourNewsSources,
-                        style: AppTextStyles.headingSmall,
+                        style: AppTextStyles.headingSmall(context),
                       ),
                     ),
                   ),
@@ -146,7 +146,7 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                                 ),
                               ),
                               const SizedBox(height: AppSizes.spacingM),
-                              Text(source.name, textAlign: TextAlign.center, style: AppTextStyles.sourceName),
+                              Text(source.name, textAlign: TextAlign.center, style: AppTextStyles.sourceName(context)),
                               const SizedBox(height: AppSizes.spacingM),
                               GestureDetector(
                                 onTap: () {
@@ -165,9 +165,9 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                                   child: Center(
                                     child: Text(
                                       source.isFollowing ? AppStrings.following : AppStrings.follow,
-                                      style: source.isFollowing
-                                          ? AppTextStyles.followingButton
-                                          : AppTextStyles.followButton,
+                                        style: source.isFollowing
+                                          ? AppTextStyles.followingButton(context)
+                                          : AppTextStyles.followButton(context),
                                     ),
                                   ),
                                 ),

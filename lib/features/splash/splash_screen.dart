@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
-import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
-import 'package:news_ui_kit/core/theme/app_theme.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,27 +18,42 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    SystemChrome.setSystemUIOverlayStyle(AppTheme.splashSystemUI);
-
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
         final isLoggedIn = FirebaseAuth.instance.currentUser != null;
         Navigator.pushReplacementNamed(
           context,
-          isLoggedIn ? AppRouter.tempHome : AppRouter.onboarding,
+          isLoggedIn ? AppRouter.home : AppRouter.onboarding,
         );
       }
     });
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Set system UI based on current theme
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: isDark ? Colors.black : Colors.white,
+      systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+    ));
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? Colors.black : Colors.white;
+
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: bgColor,
       body: Stack(
         children: [
           Positioned.fill(
-            child: Container(color: AppColors.white),
+            child: Container(color: bgColor),
           ),
           Align(
             alignment: const Alignment(0, -0.4),
@@ -54,3 +67,4 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
+

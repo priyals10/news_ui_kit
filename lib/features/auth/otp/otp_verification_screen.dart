@@ -56,7 +56,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         maxLength: 1,
         textAlign: TextAlign.center,
-        style: AppTextStyles.otpDigit,
+        style: AppTextStyles.otpDigit(context),
         decoration: InputDecoration(
           counterText: "",
           border: OutlineInputBorder(
@@ -117,13 +117,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 child: Column(
                   children: [
                     const SizedBox(height: AppSizes.spacingXL),
-                    const Text(AppStrings.otpVerification, style: AppTextStyles.headingOtp),
+                    Text(AppStrings.otpVerification, style: AppTextStyles.headingOtp(context)),
                     const SizedBox(height: AppSizes.spacingSM),
 
                     Text(
                       "${AppStrings.enterOtpSentTo}${widget.contact}",
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium,
+                      style: AppTextStyles.bodyMedium(context),
                     ),
 
                     const SizedBox(height: AppSizes.spacingXXL),
@@ -142,14 +142,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     const SizedBox(height: AppSizes.spacingS),
 
                     if (state.otpError != null)
-                      Text(state.otpError!, style: AppTextStyles.error),
+                      Text(state.otpError!, style: AppTextStyles.error(context)),
 
                     const SizedBox(height: AppSizes.spacingXL),
 
                     RichText(
                       text: TextSpan(
                         text: AppStrings.resendCodeIn,
-                        style: AppTextStyles.bodySmall,
+                        style: AppTextStyles.bodySmall(context),
                         children: [
                           TextSpan(
                             text: "${secondsRemaining}s",

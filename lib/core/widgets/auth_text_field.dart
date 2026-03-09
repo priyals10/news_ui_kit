@@ -32,6 +32,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
   Widget build(BuildContext context) {
     final bool hasError = widget.errorText != null;
 
+    final colorScheme = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -39,9 +40,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
         RichText(
           text: TextSpan(
             text: widget.label,
-            style: AppTextStyles.label,
+            style: AppTextStyles.label(context),
             children: widget.isRequired
-                ? const [
+                ? [
                     TextSpan(
                       text: " *",
                       style: TextStyle(color: AppColors.error),
@@ -58,6 +59,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
           controller: widget.controller,
           keyboardType: widget.keyboardType,
           obscureText: widget.isPassword ? _obscureText : false,
+          style: TextStyle(color: colorScheme.onSurface),
           decoration: InputDecoration(
             // Use theme defaults for fill, padding, and border
             // Override borders only when there's an error

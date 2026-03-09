@@ -13,7 +13,15 @@ import 'package:news_ui_kit/features/home/select_country/select_country_screen.d
 import 'package:news_ui_kit/features/home/topics/choose_topics_screen.dart';
 import 'package:news_ui_kit/features/home/news_sources/choose_news_sources_screen.dart';
 import 'package:news_ui_kit/features/home/fill_profile/fill_profile_screen.dart';
-import 'package:news_ui_kit/features/home/temp_home_screen.dart';
+import 'package:news_ui_kit/features/home/presentation/main_screen.dart';
+import 'package:news_ui_kit/features/home/presentation/trending_screen.dart';
+import 'package:news_ui_kit/features/home/presentation/article_detail_screen.dart';
+import 'package:news_ui_kit/features/home/presentation/latest_screen.dart';
+import 'package:news_ui_kit/features/home/presentation/search_screen.dart';
+import 'package:news_ui_kit/features/home/presentation/edit_profile_screen.dart';
+import 'package:news_ui_kit/features/home/presentation/settings_screen.dart';
+import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
+import 'package:news_ui_kit/features/auth/data/user_model.dart';
 
 class AppRouter {
   AppRouter._();
@@ -31,7 +39,13 @@ class AppRouter {
   static const String chooseTopics = '/choose-topics';
   static const String chooseNewsSources = '/choose-news-sources';
   static const String fillProfile = '/fill-profile';
-  static const String tempHome = '/temp-home';
+  static const String home = '/home';
+  static const String trending = '/trending';
+  static const String articleDetail = '/article-detail';
+  static const String latest = '/latest';
+  static const String searchNews = '/search-news';
+  static const String editProfile = '/edit-profile';
+  static const String settings = '/settings';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -73,8 +87,29 @@ class AppRouter {
       case fillProfile:
         return _buildRoute(const FillProfileScreen(), settings: settings);
 
-      case tempHome:
-        return _buildRoute(const TempHomeScreen());
+      case home:
+        return _buildRoute(const MainScreen());
+
+      case trending:
+        final articles = settings.arguments as List<NewsArticle>;
+        return _buildRoute(TrendingScreen(articles: articles));
+
+      case articleDetail:
+        final article = settings.arguments as NewsArticle;
+        return _buildRoute(ArticleDetailScreen(article: article));
+
+      case latest:
+        return _buildRoute(const LatestScreen());
+
+      case searchNews:
+        return _buildRoute(const SearchScreen());
+
+      case editProfile:
+        final user = settings.arguments as UserModel;
+        return _buildRoute(EditProfileScreen(user: user));
+
+      case AppRouter.settings:
+        return _buildRoute(const SettingsScreen());
 
       default:
         return _buildRoute(const SplashScreen());

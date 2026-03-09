@@ -26,15 +26,15 @@ class ResetSuccessScreen extends StatelessWidget {
 
               Text(
                 AppStrings.congratulations,
-                style: AppTextStyles.headingMedium.copyWith(fontSize: 34),
+                style: AppTextStyles.headingMedium(context).copyWith(fontSize: 34),
               ),
 
               const SizedBox(height: AppSizes.spacingS),
 
-              const Text(
+              Text(
                 AppStrings.accountReady,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.bodySmall,
+                style: AppTextStyles.bodySmall(context),
               ),
 
               const Spacer(),

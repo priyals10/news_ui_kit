@@ -39,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.isSuccess) {
-            Navigator.pushReplacementNamed(context, AppRouter.tempHome);
+            Navigator.pushReplacementNamed(context, AppRouter.home);
           }
         },
         builder: (context, state) {
@@ -52,10 +52,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSizes.spacingHuge),
-                    const Text(AppStrings.hello, style: AppTextStyles.headingLarge),
-                    const Text(AppStrings.again, style: AppTextStyles.headingLargePrimary),
+                    Text(AppStrings.hello, style: AppTextStyles.headingLarge(context)),
+                    Text(AppStrings.again, style: AppTextStyles.headingLargePrimary(context)),
                     const SizedBox(height: AppSizes.spacingM),
-                    const Text(AppStrings.welcomeBack, style: AppTextStyles.bodyLarge),
+                    Text(AppStrings.welcomeBack, style: AppTextStyles.bodyLarge(context)),
                     const SizedBox(height: AppSizes.spacingHuge),
 
                     AuthTextField(
@@ -97,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             onPressed: () {
                               Navigator.pushNamed(context, AppRouter.forgotPassword);
                             },
-                            child: const Text(AppStrings.forgotThePassword, style: AppTextStyles.linkButton),
+                            child: Text(AppStrings.forgotThePassword, style: AppTextStyles.linkButton(context)),
                           ),
                         ],
                       ),
@@ -141,11 +141,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: GestureDetector(
                         onTap: () => Navigator.pushNamed(context, AppRouter.signup),
                         child: RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             text: AppStrings.dontHaveAccount,
-                            style: AppTextStyles.greyText,
+                            style: AppTextStyles.greyText(context),
                             children: [
-                              TextSpan(text: AppStrings.signUp, style: AppTextStyles.link),
+                              TextSpan(text: AppStrings.signUp, style: AppTextStyles.link(context)),
                             ],
                           ),
                         ),

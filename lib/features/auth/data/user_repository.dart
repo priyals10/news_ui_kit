@@ -36,6 +36,11 @@ class UserRepository {
     await _usersCollection.doc(uid).update(data);
   }
 
+  // ── Save or Update User Profile (creates doc if missing) ──
+  Future<void> saveOrUpdateProfile(String uid, Map<String, dynamic> data) async {
+    await _usersCollection.doc(uid).set(data, SetOptions(merge: true));
+  }
+
   // ── Check if profile exists ──
   Future<bool> profileExists(String uid) async {
     final doc = await _usersCollection.doc(uid).get();

@@ -139,7 +139,7 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
         await _userRepository.saveUserProfile(userModel);
 
         if (mounted) {
-          Navigator.pushReplacementNamed(context, AppRouter.tempHome);
+          Navigator.pushReplacementNamed(context, AppRouter.home);
         }
       } catch (e) {
         if (mounted) {
@@ -176,9 +176,9 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
                     onTap: () => Navigator.pop(context),
                     child: const Icon(Icons.arrow_back),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Center(
-                      child: Text(AppStrings.fillYourProfile, style: AppTextStyles.headingSmall),
+                      child: Text(AppStrings.fillYourProfile, style: AppTextStyles.headingSmall(context)),
                     ),
                   ),
                   const SizedBox(width: 24),

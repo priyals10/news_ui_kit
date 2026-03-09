@@ -130,7 +130,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           onPressed: previousPage,
                           child: Text(
                             AppStrings.back,
-                            style: AppTextStyles.greyButton,
+                            style: AppTextStyles.greyButton(context),
                           ),
                         ),
 

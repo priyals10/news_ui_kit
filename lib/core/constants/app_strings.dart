@@ -65,6 +65,31 @@ class AppStrings {
   static const String takePhoto = "Take Photo";
   static const String chooseFromGallery = "Choose from Gallery";
 
+  // Home
+  static const String trending = "Trending";
+  static const String latest = "Latest";
+  static const String seeAll = "See all";
+
+  // Categories
+  static const String all = "All";
+  static const String sports = "Sports";
+  static const String politics = "Politics";
+  static const String business = "Business";
+  static const String health = "Health";
+  static const String travel = "Travel";
+  static const String science = "Science";
+  static const String technology = "Technology";
+  static const String entertainment = "Entertainment";
+
+  // Profile
+  static const String profile = "Profile";
+  static const String editProfile = "Edit Profile";
+  static const String bio = "Bio";
+  static const String website = "Website";
+  static const String followers = "Followers";
+  static const String news = "News";
+  static const String logout = "Logout";
+
   // Buttons
   static const String next = "Next";
   static const String submit = "Submit";

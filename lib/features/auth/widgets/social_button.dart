@@ -37,7 +37,7 @@ class SocialButton extends StatelessWidget {
               const SizedBox(width: AppSizes.spacingSM),
               Text(
                 text,
-                style: AppTextStyles.socialButton,
+                style: AppTextStyles.socialButton(context),
               ),
             ],
           ),

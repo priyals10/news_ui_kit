@@ -53,9 +53,9 @@ class _SignupScreenState extends State<SignupScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSizes.spacingHuge),
-                    const Text(AppStrings.helloExclaim, style: AppTextStyles.headingLargePrimary),
+                    Text(AppStrings.helloExclaim, style: AppTextStyles.headingLargePrimary(context)),
                     const SizedBox(height: AppSizes.spacingSM),
-                    const Text(AppStrings.signupToGetStarted, style: AppTextStyles.bodyLarge),
+                    Text(AppStrings.signupToGetStarted, style: AppTextStyles.bodyLarge(context)),
                     const SizedBox(height: 50),
 
                     AuthTextField(
@@ -119,11 +119,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: GestureDetector(
                         onTap: () => Navigator.pushReplacementNamed(context, AppRouter.login),
                         child: RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             text: AppStrings.alreadyHaveAccount,
-                            style: AppTextStyles.greyText,
+                            style: AppTextStyles.greyText(context),
                             children: [
-                              TextSpan(text: AppStrings.login, style: AppTextStyles.link),
+                              TextSpan(text: AppStrings.login, style: AppTextStyles.link(context)),
                             ],
                           ),
                         ),

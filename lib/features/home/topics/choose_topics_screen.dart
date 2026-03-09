@@ -76,9 +76,9 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
                     onTap: () => Navigator.pop(context),
                     child: const Icon(Icons.arrow_back),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Center(
-                      child: Text(AppStrings.chooseYourTopics, style: AppTextStyles.headingSmall),
+                      child: Text(AppStrings.chooseYourTopics, style: AppTextStyles.headingSmall(context)),
                     ),
                   ),
                   const SizedBox(width: 24),
@@ -124,9 +124,9 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
                             ),
                             child: Text(
                               topic,
-                              style: isSelected
-                                  ? AppTextStyles.chipTextSelected
-                                  : AppTextStyles.chipText,
+                                style: isSelected
+                                  ? AppTextStyles.chipTextSelected(context)
+                                  : AppTextStyles.chipText(context),
                             ),
                           ),
                         );

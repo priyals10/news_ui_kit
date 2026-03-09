@@ -41,12 +41,12 @@ class OnboardingPage extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: AppTextStyles.onboardingTitle,
+                  style: AppTextStyles.onboardingTitle(context),
                 ),
                 const SizedBox(height: AppSizes.spacingS),
                 Text(
                   description,
-                  style: AppTextStyles.onboardingDesc,
+                  style: AppTextStyles.onboardingDesc(context),
                 ),
               ],
             ),
