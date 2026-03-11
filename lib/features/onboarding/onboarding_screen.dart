@@ -8,6 +8,7 @@ import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/theme/app_theme.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding_page.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -55,14 +56,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     },
   ];
 
-  void nextPage() {
+  Future<void> nextPage() async {
     if (currentIndex < pages.length - 1) {
       _controller.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.pushReplacementNamed(context, AppRouter.login);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_seen_onboarding', true);
+      if (mounted) Navigator.pushReplacementNamed(context, AppRouter.login);
     }
   }
 
@@ -79,7 +82,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
-      backgroundColor: AppColors.scaffoldLight,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
           Expanded(

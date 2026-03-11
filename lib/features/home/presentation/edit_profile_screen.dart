@@ -33,6 +33,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   File? _newProfileImage;
   bool _isSaving = false;
 
+
+
+  String? usernameError;
+  String? fullNameError;
+  String? emailError;
+  String? phoneError;
+
   @override
   void initState() {
     super.initState();
@@ -103,6 +110,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _saveProfile() async {
+    setState(() {
+      if (_usernameController.text.trim().isEmpty) {
+        usernameError = AppStrings.usernameRequired;
+      } else {
+        usernameError = null;
+      }
+
+      if (_fullNameController.text.trim().isEmpty) {
+        fullNameError = 'Full name is required';
+      } else {
+        fullNameError = null;
+      }
+
+      if (_emailController.text.trim().isEmpty) {
+        emailError = AppStrings.emailRequired;
+      } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(_emailController.text.trim())) {
+        emailError = AppStrings.invalidEmail;
+      } else {
+        emailError = null;
+      }
+
+      if (_phoneController.text.trim().isEmpty) {
+        phoneError = AppStrings.phoneRequired;
+      } else if (!RegExp(r'^[0-9]{10,13}$').hasMatch(_phoneController.text.trim())) {
+        phoneError = AppStrings.invalidPhone;
+      } else {
+        phoneError = null;
+      }
+    });
+
+    if (usernameError != null || fullNameError != null || emailError != null || phoneError != null) return;
+
     setState(() => _isSaving = true);
 
     try {
@@ -223,23 +262,27 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             AuthTextField(
               label: AppStrings.username,
               controller: _usernameController,
+              errorText: usernameError,
               isRequired: false,
             ),
 
             AuthTextField(
               label: AppStrings.fullName,
               controller: _fullNameController,
+              errorText: fullNameError,
               isRequired: false,
             ),
 
             AuthTextField(
               label: AppStrings.emailAddress,
               controller: _emailController,
+              errorText: emailError,
             ),
 
             AuthTextField(
               label: AppStrings.phoneNumber,
               controller: _phoneController,
+              errorText: phoneError,
               keyboardType: TextInputType.phone,
             ),
 

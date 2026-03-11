@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_ui_kit/core/constants/app_colors.dart';
+
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
@@ -41,8 +41,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: AppBar(),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.surface),
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),

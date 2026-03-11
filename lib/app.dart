@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/core/theme/app_theme.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
@@ -29,12 +30,27 @@ class App extends StatelessWidget {
         valueListenable: themeModeNotifier,
         builder: (context, themeMode, _) {
           return MaterialApp(
+            title: 'Kabar',
             debugShowCheckedModeBanner: false,
             theme: AppTheme.light,
             darkTheme: AppTheme.dark,
             themeMode: themeMode,
             onGenerateRoute: AppRouter.onGenerateRoute,
             initialRoute: AppRouter.splash,
+            builder: (context, child) {
+              return Builder(
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  final isDark = theme.brightness == Brightness.dark;
+                  return AnnotatedRegion<SystemUiOverlayStyle>(
+                    value: (isDark ? AppTheme.darkSystemUI : AppTheme.defaultSystemUI).copyWith(
+                      systemNavigationBarColor: theme.colorScheme.surface,
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+            },
           );
         },
       ),

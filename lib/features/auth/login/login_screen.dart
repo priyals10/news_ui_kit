@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
@@ -37,15 +39,20 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocProvider(
       create: (_) => AuthBloc(AuthRepository()),
       child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state.isSuccess) {
-            Navigator.pushReplacementNamed(context, AppRouter.home);
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('remember_me', rememberMe);
+            await prefs.setBool('has_seen_onboarding', true);
+            if (context.mounted) {
+              Navigator.pushReplacementNamed(context, AppRouter.home);
+            }
           }
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.white,
-            body: SafeArea(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+              body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
                 child: Column(
@@ -90,7 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                               ),
                               const SizedBox(width: 4),
-                              const Text(AppStrings.rememberMe, style: TextStyle(fontSize: 16)),
+                              Text(AppStrings.rememberMe, style: AppTextStyles.bodyMedium(context)),
                             ],
                           ),
                           TextButton(
@@ -106,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: state.isLoading ? null : () {
                           context.read<AuthBloc>().add(
                             LoginSubmitted(
                               email: emailController.text,
@@ -114,15 +121,17 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           );
                         },
-                        child: const Text(AppStrings.login),
+                        child: state.isLoading 
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)) 
+                            : const Text(AppStrings.login),
                       ),
                     ),
 
                     const SizedBox(height: AppSizes.spacingMD),
-                    const Center(
+                    Center(
                       child: Text(
                         AppStrings.orContinueWith,
-                        style: TextStyle(fontSize: 16, color: AppColors.textBlack),
+                        style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
                       ),
                     ),
                     const SizedBox(height: AppSizes.spacingS),

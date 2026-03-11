@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -109,8 +109,8 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: AppBar(),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.surface),
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),

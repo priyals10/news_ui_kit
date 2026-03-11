@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 
@@ -29,23 +30,43 @@ class ArticleDetailScreen extends StatelessWidget {
               ),
             ),
             flexibleSpace: FlexibleSpaceBar(
-              background: article.imageUrl.isNotEmpty
-                  ? Image.network(
-                      article.imageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => ColoredBox(
-                        color: colorScheme.surfaceContainerHighest,
-                        child: Center(
-                          child: Icon(Icons.broken_image, color: colorScheme.outline, size: 48),
+              background: Stack(
+                fit: StackFit.expand,
+                children: [
+                  article.imageUrl.isNotEmpty
+                      ? Image.network(
+                          article.imageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => ColoredBox(
+                            color: colorScheme.surfaceContainerHighest,
+                            child: Center(
+                              child: Icon(Icons.broken_image, color: colorScheme.outline, size: 48),
+                            ),
+                          ),
+                        )
+                      : ColoredBox(
+                          color: colorScheme.surfaceContainerHighest,
+                          child: Center(
+                            child: Icon(Icons.article, color: colorScheme.outline, size: 48),
+                          ),
+                        ),
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: 120,
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.black87, Colors.transparent],
                         ),
                       ),
-                    )
-                  : ColoredBox(
-                      color: colorScheme.surfaceContainerHighest,
-                      child: Center(
-                        child: Icon(Icons.article, color: colorScheme.outline, size: 48),
-                      ),
                     ),
+                  ),
+                ],
+              ),
             ),
           ),
 
@@ -76,7 +97,7 @@ class ArticleDetailScreen extends StatelessWidget {
                         Icon(Icons.access_time, size: 16, color: colorScheme.outline),
                         const SizedBox(width: 6),
                         Text(
-                          DateFormat('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'').format(article.publishedAt!),
+                          DateFormat('MMM d, yyyy').format(article.publishedAt!),
                           style: TextStyle(
                             fontSize: 13,
                             color: colorScheme.outline,
@@ -93,7 +114,10 @@ class ArticleDetailScreen extends StatelessWidget {
                       CircleAvatar(
                         radius: 12,
                         backgroundColor: colorScheme.surfaceContainerHighest,
-                        child: Icon(Icons.public, size: 14, color: colorScheme.outline),
+                        backgroundImage: article.url.isNotEmpty 
+                            ? NetworkImage('https://www.google.com/s2/favicons?domain=${Uri.tryParse(article.url)?.host ?? ""}&sz=128') 
+                            : null,
+                        child: article.url.isEmpty ? Icon(Icons.public, size: 14, color: colorScheme.outline) : null,
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -145,6 +169,47 @@ class ArticleDetailScreen extends StatelessWidget {
                         fontSize: 15,
                         height: 1.6,
                         color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+
+                  const SizedBox(height: AppSizes.spacingHuge),
+
+                  // Read Full Article Button
+                  if (article.url.isNotEmpty)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () async {
+                          final uri = Uri.parse(article.url);
+                          try {
+                            final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+                            if (!launched && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Could not open the article.')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Could not open the article.')),
+                              );
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.open_in_browser),
+                        label: const Text('Read more'),
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: colorScheme.primary,
+                          foregroundColor: colorScheme.onPrimary,
+                          textStyle: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
                       ),
                     ),
 

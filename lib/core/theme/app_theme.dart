@@ -15,6 +15,14 @@ class AppTheme {
     systemNavigationBarIconBrightness: Brightness.dark,
   );
 
+  static const SystemUiOverlayStyle darkSystemUI = SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarColor: Color(0xFF212121), // Matches Colors.grey[900]
+    systemNavigationBarIconBrightness: Brightness.light,
+  );
+
   static const SystemUiOverlayStyle splashSystemUI = SystemUiOverlayStyle(
     statusBarColor: AppColors.white,
     statusBarIconBrightness: Brightness.dark,
@@ -171,7 +179,13 @@ class AppTheme {
         if (states.contains(WidgetState.selected)) {
           return AppColors.primary;
         }
-        return Colors.black;
+        return Colors.grey[900];
+      }),
+      side: WidgetStateBorderSide.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) {
+          return const BorderSide(color: AppColors.primary, width: 2);
+        }
+        return const BorderSide(color: AppColors.greyBorder, width: 2);
       }),
     ),
     inputDecorationTheme: InputDecorationTheme(

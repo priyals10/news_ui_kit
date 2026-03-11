@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/features/home/domain/use_cases/get_top_headlines_use_case.dart';
 import 'package:news_ui_kit/features/home/domain/use_cases/get_headlines_by_category_use_case.dart';
 import 'package:news_ui_kit/features/home/domain/use_cases/search_articles_use_case.dart';
+import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 import 'news_event.dart';
 import 'news_state.dart';
 
@@ -9,6 +10,8 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
   final GetTopHeadlinesUseCase _getTopHeadlines;
   final GetHeadlinesByCategoryUseCase _getHeadlinesByCategory;
   final SearchArticlesUseCase _searchArticles;
+
+  final Map<String, List<NewsArticle>> _categoryCache = {};
 
   NewsBloc(this._getTopHeadlines, this._getHeadlinesByCategory, this._searchArticles)
       : super(NewsInitial()) {
@@ -32,6 +35,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
   ) async {
     emit(NewsLoading());
     try {
+      _categoryCache.clear();
       final articles = await _getTopHeadlines();
       emit(NewsLoaded(articles));
       // Auto-fetch latest (All) after trending loads
@@ -46,6 +50,19 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     Emitter<NewsState> emit,
   ) async {
     final currentState = state;
+    
+    // Load from cache instantly if available to prevent redundant API calls
+    if (_categoryCache.containsKey(event.category)) {
+      if (currentState is NewsLoaded) {
+        emit(currentState.copyWith(
+          latestArticles: _categoryCache[event.category],
+          selectedCategory: event.category,
+          isLatestLoading: false,
+        ));
+      }
+      return;
+    }
+
     // Keep trending articles while loading latest
     if (currentState is NewsLoaded) {
       emit(currentState.copyWith(
@@ -74,6 +91,8 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       final latestArticles = apiCategory == null
           ? await _getTopHeadlines()
           : await _getHeadlinesByCategory(category: apiCategory);
+          
+      _categoryCache[event.category] = latestArticles;
 
       if (state is NewsLoaded) {
         emit((state as NewsLoaded).copyWith(

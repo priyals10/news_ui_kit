@@ -12,11 +12,10 @@ class SettingsScreen extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : AppColors.textBlack;
     final iconColor = isDark ? Colors.white : AppColors.textBlack;
-    // Removed unused variable arrowColor
     return Scaffold(
-      backgroundColor: isDark ? Colors.black : AppColors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: isDark ? Colors.black : AppColors.white,
+        backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: iconColor),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
@@ -67,7 +67,7 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingHSmall),
@@ -95,12 +95,7 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
 
               const SizedBox(height: AppSizes.spacingXL),
 
-              AppSearchField(
-                controller: searchController,
-                borderColor: AppColors.primary,
-                borderRadius: AppSizes.radiusXL,
-                height: 55,
-              ),
+              AppSearchField(controller: searchController),
 
               const SizedBox(height: 25),
 
@@ -122,8 +117,9 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: AppColors.cardBg,
+                            color: Theme.of(context).brightness == Brightness.dark ? Colors.transparent : AppColors.cardBg,
                             borderRadius: BorderRadius.circular(AppSizes.radiusXXL),
+                            border: Theme.of(context).brightness == Brightness.dark ? Border.all(color: Colors.grey[850]!) : null,
                           ),
                           child: Column(
                             children: [
@@ -131,7 +127,7 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                                 width: double.infinity,
                                 height: 95,
                                 decoration: BoxDecoration(
-                                  color: AppColors.cardInner,
+                                  color: Theme.of(context).brightness == Brightness.dark ? Colors.transparent : AppColors.cardInner,
                                   borderRadius: BorderRadius.circular(AppSizes.radiusXXL),
                                 ),
                                 child: Center(
@@ -158,7 +154,9 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
                                   width: 95,
                                   padding: const EdgeInsets.symmetric(vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: source.isFollowing ? AppColors.primary : AppColors.white,
+                                    color: source.isFollowing 
+                                        ? AppColors.primary 
+                                        : (Theme.of(context).brightness == Brightness.dark ? Colors.transparent : AppColors.white),
                                     borderRadius: BorderRadius.circular(AppSizes.radiusL),
                                     border: Border.all(color: AppColors.primary),
                                   ),

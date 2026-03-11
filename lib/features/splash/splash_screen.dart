@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,13 +19,26 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 3), () async {
       if (mounted) {
+        final prefs = await SharedPreferences.getInstance();
+        final rememberMe = prefs.getBool('remember_me') ?? true;
+        
+        if (!rememberMe) {
+          await FirebaseAuth.instance.signOut();
+        }
+
+        final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+
         final isLoggedIn = FirebaseAuth.instance.currentUser != null;
-        Navigator.pushReplacementNamed(
-          context,
-          isLoggedIn ? AppRouter.home : AppRouter.onboarding,
-        );
+        if (mounted) {
+          Navigator.pushReplacementNamed(
+            context,
+            isLoggedIn 
+              ? AppRouter.home 
+              : (hasSeenOnboarding ? AppRouter.login : AppRouter.onboarding),
+          );
+        }
       }
     });
   }
@@ -38,15 +52,14 @@ class _SplashScreenState extends State<SplashScreen> {
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
-      systemNavigationBarColor: isDark ? Colors.black : Colors.white,
+      systemNavigationBarColor: isDark ? const Color(0xFF212121) : Colors.white,
       systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
     ));
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = Theme.of(context).colorScheme.surface;
 
     return Scaffold(
       backgroundColor: bgColor,

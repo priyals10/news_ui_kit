@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart' as picker;
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
@@ -62,7 +62,7 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldLight,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingHSmall),
@@ -118,9 +118,15 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
                               vertical: 15,
                             ),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.white,
+                              color: isSelected 
+                                ? AppColors.primary 
+                                : (Theme.of(context).brightness == Brightness.dark ? Colors.transparent : AppColors.white),
                               borderRadius: BorderRadius.circular(AppSizes.radiusS),
-                              border: Border.all(color: AppColors.primary),
+                              border: Border.all(
+                                color: isSelected 
+                                  ? AppColors.primary 
+                                  : (Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : AppColors.primary)
+                              ),
                             ),
                             child: Text(
                               topic,

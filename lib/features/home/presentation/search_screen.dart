@@ -47,6 +47,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Scaffold(
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
         elevation: 0,
@@ -57,35 +58,53 @@ class _SearchScreenState extends State<SearchScreen> {
             Navigator.pop(context);
           },
         ),
-        title: Container(
-          height: 44,
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: colorScheme.outline),
-          ),
+        title: SizedBox(
+          height: 48,
           child: TextField(
             controller: _controller,
             focusNode: _focusNode,
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _onSearch(),
+            onChanged: (_) {
+              setState(() {}); 
+              _onSearch();
+            },
+            textAlignVertical: TextAlignVertical.center,
             style: TextStyle(fontSize: 16, color: colorScheme.onSurface),
             decoration: InputDecoration(
+              isDense: true,
               hintText: AppStrings.search,
               hintStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 16),
-              prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant, size: 22),
-              suffixIcon: IconButton(
-                icon: Icon(Icons.clear, color: colorScheme.onSurfaceVariant, size: 20),
-                onPressed: () {
-                  _controller.clear();
-                },
+              prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant, size: 24),
+              suffixIcon: _controller.text.isEmpty
+                  ? null
+                  : IconButton(
+                      icon: Icon(Icons.clear, color: colorScheme.onSurfaceVariant, size: 20),
+                      onPressed: () {
+                        _controller.clear();
+                        _onSearch();
+                        setState(() {});
+                      },
+                    ),
+              filled: true,
+              fillColor: colorScheme.surface,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                borderSide: BorderSide(color: colorScheme.outline),
               ),
-              border: InputBorder.none,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                borderSide: BorderSide(color: colorScheme.outline),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                borderSide: BorderSide(color: colorScheme.outline),
+              ),
               contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ),
-        titleSpacing: 0,
+        titleSpacing: 8,
         actions: [
           TextButton(
             onPressed: _onSearch,
