@@ -82,7 +82,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       icon: Icon(Icons.clear, color: colorScheme.onSurfaceVariant, size: 20),
                       onPressed: () {
                         _controller.clear();
-                        _onSearch();
+                        _onSearch(); 
                         setState(() {});
                       },
                     ),
