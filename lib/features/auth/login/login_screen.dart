@@ -1,4 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
@@ -7,6 +9,7 @@ import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
+import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
@@ -20,13 +23,13 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool rememberMe = true;
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
@@ -34,33 +37,38 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthBloc(),
+      create: (_) => AuthBloc(AuthRepository()),
       child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state.isSuccess) {
-            Navigator.pushReplacementNamed(context, AppRouter.selectCountry);
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('remember_me', rememberMe);
+            await prefs.setBool('has_seen_onboarding', true);
+            if (context.mounted) {
+              Navigator.pushReplacementNamed(context, AppRouter.home);
+            }
           }
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.white,
-            body: SafeArea(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+              body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSizes.spacingHuge),
-                    const Text(AppStrings.hello, style: AppTextStyles.headingLarge),
-                    const Text(AppStrings.again, style: AppTextStyles.headingLargePrimary),
+                    Text(AppStrings.hello, style: AppTextStyles.headingLarge(context)),
+                    Text(AppStrings.again, style: AppTextStyles.headingLargePrimary(context)),
                     const SizedBox(height: AppSizes.spacingM),
-                    const Text(AppStrings.welcomeBack, style: AppTextStyles.bodyLarge),
+                    Text(AppStrings.welcomeBack, style: AppTextStyles.bodyLarge(context)),
                     const SizedBox(height: AppSizes.spacingHuge),
 
                     AuthTextField(
-                      label: AppStrings.username,
-                      controller: usernameController,
-                      errorText: state.usernameError,
+                      label: AppStrings.email,
+                      controller: emailController,
+                      errorText: state.emailError,
                     ),
 
                     AuthTextField(
@@ -89,14 +97,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                               ),
                               const SizedBox(width: 4),
-                              const Text(AppStrings.rememberMe, style: TextStyle(fontSize: 16)),
+                              Text(AppStrings.rememberMe, style: AppTextStyles.bodyMedium(context)),
                             ],
                           ),
                           TextButton(
                             onPressed: () {
                               Navigator.pushNamed(context, AppRouter.forgotPassword);
                             },
-                            child: const Text(AppStrings.forgotThePassword, style: AppTextStyles.linkButton),
+                            child: Text(AppStrings.forgotThePassword, style: AppTextStyles.linkButton(context)),
                           ),
                         ],
                       ),
@@ -105,23 +113,25 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: state.isLoading ? null : () {
                           context.read<AuthBloc>().add(
                             LoginSubmitted(
-                              username: usernameController.text,
+                              email: emailController.text,
                               password: passwordController.text,
                             ),
                           );
                         },
-                        child: const Text(AppStrings.login),
+                        child: state.isLoading 
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)) 
+                            : const Text(AppStrings.login),
                       ),
                     ),
 
                     const SizedBox(height: AppSizes.spacingMD),
-                    const Center(
+                    Center(
                       child: Text(
                         AppStrings.orContinueWith,
-                        style: TextStyle(fontSize: 16, color: AppColors.textBlack),
+                        style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
                       ),
                     ),
                     const SizedBox(height: AppSizes.spacingS),
@@ -140,11 +150,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: GestureDetector(
                         onTap: () => Navigator.pushNamed(context, AppRouter.signup),
                         child: RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             text: AppStrings.dontHaveAccount,
-                            style: AppTextStyles.greyText,
+                            style: AppTextStyles.greyText(context),
                             children: [
-                              TextSpan(text: AppStrings.signUp, style: AppTextStyles.link),
+                              TextSpan(text: AppStrings.signUp, style: AppTextStyles.link(context)),
                             ],
                           ),
                         ),

@@ -1,5 +1,7 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
@@ -7,6 +9,7 @@ import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
+import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
@@ -20,13 +23,13 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
-    usernameController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
     super.dispose();
@@ -35,32 +38,36 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthBloc(),
+      create: (_) => AuthBloc(AuthRepository()),
       child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state.isSuccess) {
-            debugPrint("Signup Successful");
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('has_seen_onboarding', true);
+            if (context.mounted) {
+              Navigator.pushNamedAndRemoveUntil(context, AppRouter.selectCountry, (route) => false);
+            }
           }
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.white,
-            body: SafeArea(
+            backgroundColor: Theme.of(context).colorScheme.surface,
+              body: SafeArea(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSizes.spacingHuge),
-                    const Text(AppStrings.helloExclaim, style: AppTextStyles.headingLargePrimary),
+                    Text(AppStrings.helloExclaim, style: AppTextStyles.headingLargePrimary(context)),
                     const SizedBox(height: AppSizes.spacingSM),
-                    const Text(AppStrings.signupToGetStarted, style: AppTextStyles.bodyLarge),
+                    Text(AppStrings.signupToGetStarted, style: AppTextStyles.bodyLarge(context)),
                     const SizedBox(height: 50),
 
                     AuthTextField(
-                      label: AppStrings.username,
-                      controller: usernameController,
-                      errorText: state.usernameError,
+                      label: AppStrings.email,
+                      controller: emailController,
+                      errorText: state.emailError,
                     ),
 
                     AuthTextField(
@@ -82,24 +89,26 @@ class _SignupScreenState extends State<SignupScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
+                        onPressed: state.isLoading ? null : () {
                           context.read<AuthBloc>().add(
                             SignupSubmitted(
-                              username: usernameController.text,
+                              email: emailController.text,
                               password: passwordController.text,
                               confirmPassword: confirmPasswordController.text,
                             ),
                           );
                         },
-                        child: const Text(AppStrings.signUp),
+                        child: state.isLoading 
+                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: AppColors.white, strokeWidth: 2)) 
+                            : const Text(AppStrings.signUp),
                       ),
                     ),
 
                     const SizedBox(height: AppSizes.spacingMD),
-                    const Center(
+                    Center(
                       child: Text(
                         AppStrings.orContinueWith,
-                        style: TextStyle(fontSize: 16, color: AppColors.textBlack),
+                        style: TextStyle(fontSize: 16, color: Theme.of(context).colorScheme.onSurface),
                       ),
                     ),
                     const SizedBox(height: AppSizes.spacingS),
@@ -118,11 +127,11 @@ class _SignupScreenState extends State<SignupScreen> {
                       child: GestureDetector(
                         onTap: () => Navigator.pushReplacementNamed(context, AppRouter.login),
                         child: RichText(
-                          text: const TextSpan(
+                          text: TextSpan(
                             text: AppStrings.alreadyHaveAccount,
-                            style: AppTextStyles.greyText,
+                            style: AppTextStyles.greyText(context),
                             children: [
-                              TextSpan(text: AppStrings.login, style: AppTextStyles.link),
+                              TextSpan(text: AppStrings.login, style: AppTextStyles.link(context)),
                             ],
                           ),
                         ),

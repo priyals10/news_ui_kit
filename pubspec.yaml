@@ -50,12 +50,21 @@ dependencies:
   flutter_bloc: ^8.1.6
 
   equatable: ^2.0.7
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+  http: ^1.6.0
+  intl: ^0.20.2
+  shared_preferences: ^2.5.4
+  url_launcher: ^6.3.2
 
   # flutter_country_flags: ^0.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  flutter_launcher_icons: ^0.13.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -107,3 +116,9 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/logo.png"
+  min_sdk_size: 21

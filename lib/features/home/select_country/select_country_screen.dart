@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart' as picker;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
@@ -49,7 +49,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldLight,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingHSmall),
@@ -57,7 +57,7 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
             children: [
               const SizedBox(height: AppSizes.spacingXL),
 
-              const Text(AppStrings.selectYourCountry, style: AppTextStyles.headingSmall),
+              Text(AppStrings.selectYourCountry, style: AppTextStyles.headingSmall(context)),
 
               const SizedBox(height: AppSizes.spacingXL),
 
@@ -119,8 +119,8 @@ class _SelectCountryScreenState extends State<SelectCountryScreen> {
                               child: Text(
                                 country.name,
                                 style: isSelected
-                                    ? AppTextStyles.listItemSelected
-                                    : AppTextStyles.listItem,
+                                  ? AppTextStyles.listItemSelected(context)
+                                  : AppTextStyles.listItem(context),
                               ),
                             ),
                           ],

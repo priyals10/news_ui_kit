@@ -9,39 +9,39 @@ abstract class AuthEvent extends Equatable {
 
 // ── Login ──
 class LoginSubmitted extends AuthEvent {
-  final String username;
+  final String email;
   final String password;
 
-  const LoginSubmitted({required this.username, required this.password});
+  const LoginSubmitted({required this.email, required this.password});
 
   @override
-  List<Object?> get props => [username, password];
+  List<Object?> get props => [email, password];
 }
 
 // ── Signup ──
 class SignupSubmitted extends AuthEvent {
-  final String username;
+  final String email;
   final String password;
   final String confirmPassword;
 
   const SignupSubmitted({
-    required this.username,
+    required this.email,
     required this.password,
     required this.confirmPassword,
   });
 
   @override
-  List<Object?> get props => [username, password, confirmPassword];
+  List<Object?> get props => [email, password, confirmPassword];
 }
 
 // ── Forgot Password ──
 class ForgotPasswordSubmitted extends AuthEvent {
-  final String emailOrMobile;
+  final String email;
 
-  const ForgotPasswordSubmitted({required this.emailOrMobile});
+  const ForgotPasswordSubmitted({required this.email});
 
   @override
-  List<Object?> get props => [emailOrMobile];
+  List<Object?> get props => [email];
 }
 
 // ── OTP ──

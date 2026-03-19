@@ -1,11 +1,15 @@
-﻿import 'dart:io';
+import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
+import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
+import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/auth/data/user_repository.dart';
 
 class FillProfileScreen extends StatefulWidget {
   const FillProfileScreen({super.key});
@@ -21,7 +25,9 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
   final TextEditingController phoneController = TextEditingController();
 
   final ImagePicker _picker = ImagePicker();
+  final UserRepository _userRepository = UserRepository();
   File? _profileImage;
+  bool _isLoading = false;
 
   String? emailError;
   String? phoneError;
@@ -82,7 +88,7 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     );
   }
 
-  void _validateAndSubmit() {
+  Future<void> _validateAndSubmit() async {
     setState(() {
       if (emailController.text.isEmpty) {
         emailError = AppStrings.emailRequired;
@@ -103,14 +109,54 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     });
 
     if (emailError == null && phoneError == null) {
-      debugPrint("Profile Submitted");
+      setState(() => _isLoading = true);
+
+      try {
+        final firebaseUser = FirebaseAuth.instance.currentUser;
+        if (firebaseUser == null) return;
+
+        final country = ModalRoute.of(context)?.settings.arguments as String? ?? '';
+
+        // Upload profile image if selected
+        String photoUrl = '';
+        if (_profileImage != null) {
+          photoUrl = await _userRepository.uploadProfileImage(
+            uid: firebaseUser.uid,
+            imageFile: _profileImage!,
+          );
+        }
+
+        final userModel = UserModel(
+          uid: firebaseUser.uid,
+          username: usernameController.text.trim(),
+          fullName: fullNameController.text.trim(),
+          email: emailController.text.trim(),
+          phone: phoneController.text.trim(),
+          country: country,
+          photoUrl: photoUrl,
+        );
+
+        await _userRepository.saveUserProfile(userModel);
+
+        if (mounted) {
+          Navigator.pushReplacementNamed(context, AppRouter.home);
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to save profile: $e')),
+          );
+        }
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldLight,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: SingleChildScrollView(
@@ -130,9 +176,9 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
                     onTap: () => Navigator.pop(context),
                     child: const Icon(Icons.arrow_back),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Center(
-                      child: Text(AppStrings.fillYourProfile, style: AppTextStyles.headingSmall),
+                      child: Text(AppStrings.fillYourProfile, style: AppTextStyles.headingSmall(context)),
                     ),
                   ),
                   const SizedBox(width: 24),
@@ -202,8 +248,17 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _validateAndSubmit,
-                  child: const Text(AppStrings.next),
+                  onPressed: _isLoading ? null : _validateAndSubmit,
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.white,
+                          ),
+                        )
+                      : const Text(AppStrings.next),
                 ),
               ),
             ],
