@@ -1,13 +1,67 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
+import 'package:news_ui_kit/features/home/data/repositories/user_news_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 
-class ArticleDetailScreen extends StatelessWidget {
+import 'package:news_ui_kit/features/home/data/repositories/bookmark_repository.dart';
+
+class ArticleDetailScreen extends StatefulWidget {
   final NewsArticle article;
 
   const ArticleDetailScreen({super.key, required this.article});
+
+  @override
+  State<ArticleDetailScreen> createState() => _ArticleDetailScreenState();
+}
+
+class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
+  final BookmarkRepository _bookmarkRepository = BookmarkRepository();
+  bool _isBookmarked = false;
+  bool _isLoadingBookmark = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkBookmarkStatus();
+  }
+
+  Future<void> _checkBookmarkStatus() async {
+    final status = await _bookmarkRepository.isBookmarked(widget.article);
+    if (mounted) {
+      setState(() {
+        _isBookmarked = status;
+        _isLoadingBookmark = false;
+      });
+    }
+  }
+
+  Future<void> _toggleBookmark() async {
+    final previousStatus = _isBookmarked;
+    setState(() => _isBookmarked = !previousStatus);
+
+    try {
+      if (previousStatus) {
+        await _bookmarkRepository.removeBookmark(widget.article);
+      } else {
+        await _bookmarkRepository.addBookmark(widget.article);
+      }
+    } catch (e) {
+      // Revert if failed
+      if (mounted) {
+        setState(() => _isBookmarked = previousStatus);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to update bookmark.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +73,7 @@ class ArticleDetailScreen extends StatelessWidget {
         slivers: [
           // ── Collapsing image header ──
           SliverAppBar(
+            systemOverlayStyle: SystemUiOverlayStyle.light,
             expandedHeight: 280,
             pinned: true,
             backgroundColor: colorScheme.surface,
@@ -29,15 +84,94 @@ class ArticleDetailScreen extends StatelessWidget {
                 child: Icon(Icons.arrow_back_ios_new, size: 18, color: colorScheme.onSurface),
               ),
             ),
+            actions: [
+              if (widget.article.sourceId.isNotEmpty && widget.article.url.isEmpty)
+                CircleAvatar(
+                  backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.7),
+                  child: IconButton(
+                    icon: Icon(Icons.more_vert, color: colorScheme.onSurface, size: 20),
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+                        builder: (bottomSheetContext) => SafeArea(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ListTile(
+                                leading: Icon(Icons.edit, color: colorScheme.onSurface),
+                                title: const Text('Edit'),
+                                onTap: () {
+                                  Navigator.pop(bottomSheetContext);
+                                  final userNews = UserNewsModel(
+                                    id: widget.article.sourceId,
+                                    authorId: FirebaseAuth.instance.currentUser?.uid ?? '',
+                                    authorName: widget.article.sourceName,
+                                    authorImage: '', 
+                                    title: widget.article.title,
+                                    content: widget.article.content,
+                                    coverImageUrl: widget.article.imageUrl,
+                                    createdAt: widget.article.publishedAt ?? DateTime.now(),
+                                  );
+                                  Navigator.pushNamed(context, AppRouter.createNews, arguments: userNews).then((_) {
+                                    if (context.mounted) Navigator.pop(context, true);
+                                  });
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.delete, color: Colors.red),
+                                title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                                onTap: () async {
+                                  Navigator.pop(bottomSheetContext);
+                                  
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text('Delete News'),
+                                      content: const Text('Are you sure you want to delete this news post?'),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, false),
+                                          child: const Text('Cancel'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(context, true),
+                                          child: Text('Delete', style: TextStyle(color: colorScheme.error)),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true && context.mounted) {
+                                    await UserNewsRepository().deleteUserNews(widget.article.sourceId);
+                                    if (context.mounted) {
+                                      Navigator.pop(context, true);
+                                    }
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              const SizedBox(width: 8),
+            ],
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  article.imageUrl.isNotEmpty
-                      ? Image.network(
-                          article.imageUrl,
+                  widget.article.imageUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: widget.article.imageUrl,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => ColoredBox(
+                          placeholder: (context, url) => Container(
+                            color: colorScheme.surfaceContainerHighest,
+                            child: const Center(child: CircularProgressIndicator()),
+                          ),
+                          errorWidget: (context, url, error) => ColoredBox(
                             color: colorScheme.surfaceContainerHighest,
                             child: Center(
                               child: Icon(Icons.broken_image, color: colorScheme.outline, size: 48),
@@ -79,7 +213,7 @@ class ArticleDetailScreen extends StatelessWidget {
                 children: [
                   // Title
                   Text(
-                    article.title,
+                    widget.article.title,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
@@ -91,13 +225,13 @@ class ArticleDetailScreen extends StatelessWidget {
                   const SizedBox(height: AppSizes.spacingL),
 
                   // Date
-                  if (article.publishedAt != null)
+                  if (widget.article.publishedAt != null)
                     Row(
                       children: [
                         Icon(Icons.access_time, size: 16, color: colorScheme.outline),
                         const SizedBox(width: 6),
                         Text(
-                          DateFormat('MMM d, yyyy').format(article.publishedAt!),
+                          DateFormat('MMM d, yyyy').format(widget.article.publishedAt!),
                           style: TextStyle(
                             fontSize: 13,
                             color: colorScheme.outline,
@@ -114,25 +248,25 @@ class ArticleDetailScreen extends StatelessWidget {
                       CircleAvatar(
                         radius: 12,
                         backgroundColor: colorScheme.surfaceContainerHighest,
-                        backgroundImage: article.url.isNotEmpty 
-                            ? NetworkImage('https://www.google.com/s2/favicons?domain=${Uri.tryParse(article.url)?.host ?? ""}&sz=128') 
+                        backgroundImage: widget.article.url.isNotEmpty 
+                            ? CachedNetworkImageProvider('https://www.google.com/s2/favicons?domain=${Uri.tryParse(widget.article.url)?.host ?? ""}&sz=128') 
                             : null,
-                        child: article.url.isEmpty ? Icon(Icons.public, size: 14, color: colorScheme.outline) : null,
+                        child: widget.article.url.isEmpty ? Icon(Icons.public, size: 14, color: colorScheme.outline) : null,
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        article.sourceName,
+                        widget.article.sourceName,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      if (article.author.isNotEmpty) ...[
+                      if (widget.article.author.isNotEmpty) ...[
                         Text(' · ', style: TextStyle(color: colorScheme.outline)),
                         Flexible(
                           child: Text(
-                            article.author,
+                            widget.article.author,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
@@ -148,9 +282,9 @@ class ArticleDetailScreen extends StatelessWidget {
                   const SizedBox(height: AppSizes.spacingXL),
 
                   // Description
-                  if (article.description.isNotEmpty)
+                  if (widget.article.description.isNotEmpty)
                     Text(
-                      article.description,
+                      widget.article.description,
                       style: TextStyle(
                         fontSize: 16,
                         height: 1.6,
@@ -162,9 +296,9 @@ class ArticleDetailScreen extends StatelessWidget {
                   const SizedBox(height: AppSizes.spacingL),
 
                   // Content
-                  if (article.content.isNotEmpty)
+                  if (widget.article.content.isNotEmpty)
                     Text(
-                      article.content,
+                      widget.article.content,
                       style: TextStyle(
                         fontSize: 15,
                         height: 1.6,
@@ -175,12 +309,12 @@ class ArticleDetailScreen extends StatelessWidget {
                   const SizedBox(height: AppSizes.spacingHuge),
 
                   // Read Full Article Button
-                  if (article.url.isNotEmpty)
+                  if (widget.article.url.isNotEmpty)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () async {
-                          final uri = Uri.parse(article.url);
+                          final uri = Uri.parse(widget.article.url);
                           try {
                             final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
                             if (!launched && context.mounted) {
@@ -219,6 +353,30 @@ class ArticleDetailScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          border: Border(top: BorderSide(color: colorScheme.outlineVariant, width: 0.5)),
+        ),
+        child: SafeArea(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              _isLoadingBookmark
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                  : IconButton(
+                      onPressed: _toggleBookmark,
+                      icon: Icon(
+                        _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                        color: _isBookmarked ? Colors.blue : colorScheme.onSurfaceVariant,
+                        size: 28,
+                      ),
+                    ),
+            ],
+          ),
+        ),
       ),
     );
   }

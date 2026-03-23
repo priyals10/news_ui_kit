@@ -57,6 +57,7 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.5.4
   url_launcher: ^6.3.2
+  dotted_border: ^3.1.0
 
   # flutter_country_flags: ^0.0.1
 

@@ -22,6 +22,8 @@ import 'package:news_ui_kit/features/home/presentation/edit_profile_screen.dart'
 import 'package:news_ui_kit/features/home/presentation/settings_screen.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
+import 'package:news_ui_kit/features/home/presentation/create_news_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -46,6 +48,7 @@ class AppRouter {
   static const String searchNews = '/search-news';
   static const String editProfile = '/edit-profile';
   static const String settings = '/settings';
+  static const String createNews = '/create-news';
 
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
@@ -110,6 +113,10 @@ class AppRouter {
 
       case AppRouter.settings:
         return _buildRoute(const SettingsScreen());
+
+      case createNews:
+        final existingNews = settings.arguments as UserNewsModel?;
+        return _buildRoute(CreateNewsScreen(existingNews: existingNews));
 
       default:
         return _buildRoute(const SplashScreen());

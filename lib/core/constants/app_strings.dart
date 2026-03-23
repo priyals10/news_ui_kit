@@ -90,6 +90,13 @@ class AppStrings {
   static const String news = "News";
   static const String logout = "Logout";
 
+  static const String createNews = "Create News";
+  static const String addCoverPhoto = "Add Cover Photo";
+  static const String newsTitle = "News title";
+  static const String addNewsArticle = "Add News/Article";
+  static const String publish = "Publish";
+  static const String recent = "Recent";
+
   // Buttons
   static const String next = "Next";
   static const String submit = "Submit";
