@@ -19,12 +19,3 @@ class FetchHeadlinesByCategory extends NewsEvent {
   @override
   List<Object?> get props => [category];
 }
-
-class SearchNews extends NewsEvent {
-  final String query;
-
-  const SearchNews(this.query);
-
-  @override
-  List<Object?> get props => [query];
-}

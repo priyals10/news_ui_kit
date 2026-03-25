@@ -51,24 +51,3 @@ class NewsError extends NewsState {
   @override
   List<Object?> get props => [message];
 }
-
-class SearchLoading extends NewsState {}
-
-class SearchLoaded extends NewsState {
-  final List<NewsArticle> results;
-  final String query;
-
-  const SearchLoaded(this.results, this.query);
-
-  @override
-  List<Object?> get props => [results, query];
-}
-
-class SearchError extends NewsState {
-  final String message;
-
-  const SearchError(this.message);
-
-  @override
-  List<Object?> get props => [message];
-}

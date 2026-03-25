@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-// import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/features/home/presentation/home_screen.dart';
 import 'package:news_ui_kit/features/home/presentation/explore_screen.dart';
 import 'package:news_ui_kit/features/home/presentation/bookmark_screen.dart';
 import 'package:news_ui_kit/features/home/presentation/profile_screen.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/bookmark_bloc.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,21 +16,34 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
-
   Key _profileKey = UniqueKey();
+  
+  // Cache the screens to prevent re-initialization on every build/tab-switch.
+  late List<Widget> _screens;
 
-  List<Widget> get _screens => [
-    const HomeScreen(),
-    const ExploreScreen(),
-    const SizedBox.shrink(), // Dummy screen for the middle FAB spacer
-    const BookmarkScreen(),
-    ProfileScreen(key: _profileKey),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    // Fetch bookmarks for the currently logged in user
+    context.read<BookmarkBloc>().add(LoadBookmarks());
+    _buildScreens();
+  }
+
+  void _buildScreens() {
+    _screens = [
+      const HomeScreen(),
+      const ExploreScreen(),
+      const SizedBox.shrink(), // Dummy screen for the middle FAB spacer
+      const BookmarkScreen(),
+      ProfileScreen(key: _profileKey),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
@@ -45,6 +59,7 @@ class _MainScreenState extends State<MainScreen> {
             setState(() {
               _profileKey = UniqueKey();
               _currentIndex = 4;
+              _buildScreens(); // Rebuild screens with the new key
             });
           }
         },

@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
+import 'package:news_ui_kit/features/home/domain/repositories/bookmark_repository.dart' as domain;
 
-class BookmarkRepository {
+class BookmarkRepository implements domain.BookmarkRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -19,6 +20,7 @@ class BookmarkRepository {
     return article.title.hashCode.toString(); // Fallback
   }
 
+  @override
   Future<void> addBookmark(NewsArticle article) async {
     final uid = _userId;
     if (uid == null) return;
@@ -33,6 +35,7 @@ class BookmarkRepository {
         .set(data);
   }
 
+  @override
   Future<void> removeBookmark(NewsArticle article) async {
     final uid = _userId;
     if (uid == null) return;
@@ -44,6 +47,7 @@ class BookmarkRepository {
         .delete();
   }
 
+  @override
   Future<bool> isBookmarked(NewsArticle article) async {
     final uid = _userId;
     if (uid == null) return false;
@@ -57,6 +61,7 @@ class BookmarkRepository {
     return doc.exists;
   }
 
+  @override
   Future<List<NewsArticle>> getBookmarks() async {
     final uid = _userId;
     if (uid == null) return [];
@@ -71,6 +76,7 @@ class BookmarkRepository {
         .toList();
   }
 
+  @override
   Stream<List<NewsArticle>> getBookmarksStream() {
     final uid = _userId;
     if (uid == null) return Stream.value([]);

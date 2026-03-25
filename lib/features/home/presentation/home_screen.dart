@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
@@ -19,16 +20,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  static const List<String> _categories = [
-    AppStrings.all,
-    AppStrings.sports,
-    AppStrings.politics,
-    AppStrings.business,
-    AppStrings.health,
-    AppStrings.travel,
-    AppStrings.science,
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -69,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
           if (state is NewsLoaded) {
-            return _buildContent(state);
+            return HomeNewsContent(state: state);
           }
           return const SizedBox.shrink();
         },
@@ -78,8 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   PreferredSizeWidget _buildAppBar() {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final colorScheme = Theme.of(context).colorScheme;
     return AppBar(
       backgroundColor: colorScheme.surface,
       elevation: 0,
@@ -90,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
       title: Padding(
         padding: const EdgeInsets.only(top: 20),
         child: Image.asset(
-          'assets/images/logo.png',
+          AppAssets.logo,
           height: 90,
         ),
       ),
@@ -98,9 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 10),
           child: IconButton(
-            onPressed: () {
-              // Notification tap — future feature
-            },
+            onPressed: () {},
             icon: Icon(
               Icons.notifications_none_rounded,
               color: colorScheme.onSurface,
@@ -112,9 +100,18 @@ class _HomeScreenState extends State<HomeScreen> {
       ],
     );
   }
+}
 
-  Widget _buildContent(NewsLoaded state) {
-    // Show up to 5 articles in horizontal scroll
+// ── Refactored Sub-Widgets ──────────────────────────────────────────────────
+
+class HomeNewsContent extends StatelessWidget {
+  final NewsLoaded state;
+  const HomeNewsContent({super.key, required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     final trendingArticles = state.articles.take(5).toList();
     final latestArticles = state.latestArticles.take(5).toList();
 
@@ -134,24 +131,24 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Container(
                 height: 48,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline),
+                  border: Border.all(color: colorScheme.outline),
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   children: [
-                    Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 24),
+                    Icon(Icons.search, color: colorScheme.onSurfaceVariant, size: 24),
                     const SizedBox(width: 10),
                     Text(
                       AppStrings.search,
                       style: TextStyle(
                         fontSize: 16,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const Spacer(),
-                    Icon(Icons.tune_rounded, color: Theme.of(context).colorScheme.onSurfaceVariant, size: 22),
+                    Icon(Icons.tune_rounded, color: colorScheme.onSurfaceVariant, size: 22),
                   ],
                 ),
               ),
@@ -160,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: AppSizes.spacingXL),
 
-          // ── Section header: Trending + See all ──
+          // ── Section header: Trending ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
             child: Row(
@@ -186,7 +183,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: AppSizes.spacingL),
 
-          // ── Horizontal scrollable trending cards ──
+          // ── Trending cards ──
           SizedBox(
             height: 250,
             child: ListView.separated(
@@ -214,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: AppSizes.spacingXL),
 
-          // ── Section header: Latest + See all ──
+          // ── Latest header ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
             child: Row(
@@ -236,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: AppSizes.spacingM),
 
-          // ── Category labels ──
+          // ── Categories ──
           SizedBox(
             height: 32,
             child: ListView.separated(
@@ -266,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const SizedBox(height: AppSizes.spacingL),
 
-          // ── Latest articles list ──
+          // ── Latest articles ──
           if (state.isLatestLoading)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 32),
@@ -313,4 +310,14 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+  static const List<String> _categories = [
+    AppStrings.all,
+    AppStrings.sports,
+    AppStrings.politics,
+    AppStrings.business,
+    AppStrings.health,
+    AppStrings.travel,
+    AppStrings.science,
+  ];
 }

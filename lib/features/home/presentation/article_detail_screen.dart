@@ -5,12 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
-import 'package:news_ui_kit/features/home/data/repositories/user_news_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 
-import 'package:news_ui_kit/features/home/data/repositories/bookmark_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/bookmark_bloc.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/create_news_bloc.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/create_news_event.dart';
+
 
 class ArticleDetailScreen extends StatefulWidget {
   final NewsArticle article;
@@ -22,45 +25,10 @@ class ArticleDetailScreen extends StatefulWidget {
 }
 
 class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
-  final BookmarkRepository _bookmarkRepository = BookmarkRepository();
-  bool _isBookmarked = false;
-  bool _isLoadingBookmark = true;
-
   @override
   void initState() {
     super.initState();
-    _checkBookmarkStatus();
-  }
-
-  Future<void> _checkBookmarkStatus() async {
-    final status = await _bookmarkRepository.isBookmarked(widget.article);
-    if (mounted) {
-      setState(() {
-        _isBookmarked = status;
-        _isLoadingBookmark = false;
-      });
-    }
-  }
-
-  Future<void> _toggleBookmark() async {
-    final previousStatus = _isBookmarked;
-    setState(() => _isBookmarked = !previousStatus);
-
-    try {
-      if (previousStatus) {
-        await _bookmarkRepository.removeBookmark(widget.article);
-      } else {
-        await _bookmarkRepository.addBookmark(widget.article);
-      }
-    } catch (e) {
-      // Revert if failed
-      if (mounted) {
-        setState(() => _isBookmarked = previousStatus);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update bookmark.')),
-        );
-      }
-    }
+    // No need to manual dispatch LoadBookmarks as it auto-starts in Bloc constructor
   }
 
   @override
@@ -143,7 +111,7 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
                                   );
 
                                   if (confirm == true && context.mounted) {
-                                    await UserNewsRepository().deleteUserNews(widget.article.sourceId);
+                                    context.read<CreateNewsBloc>().add(DeleteNews(newsId: widget.article.sourceId));
                                     if (context.mounted) {
                                       Navigator.pop(context, true);
                                     }
@@ -361,20 +329,36 @@ class _ArticleDetailScreenState extends State<ArticleDetailScreen> {
           border: Border(top: BorderSide(color: colorScheme.outlineVariant, width: 0.5)),
         ),
         child: SafeArea(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              _isLoadingBookmark
-                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                  : IconButton(
-                      onPressed: _toggleBookmark,
-                      icon: Icon(
-                        _isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                        color: _isBookmarked ? Colors.blue : colorScheme.onSurfaceVariant,
-                        size: 28,
-                      ),
-                    ),
-            ],
+          child: BlocConsumer<BookmarkBloc, BookmarkState>(
+            listener: (context, state) {
+              if (state.error != null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Favorite failed: ${state.error}')),
+                );
+              }
+            },
+            builder: (context, state) {
+              final isBookmarked = state.isBookmarked(widget.article);
+              final isLoading = state.isLoading && state.bookmarks.isEmpty;
+
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  isLoading
+                      ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                      : IconButton(
+                          onPressed: () {
+                            context.read<BookmarkBloc>().add(ToggleBookmark(widget.article));
+                          },
+                          icon: Icon(
+                            isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                            color: isBookmarked ? Colors.blue : colorScheme.onSurfaceVariant,
+                            size: 28,
+                          ),
+                        ),
+                ],
+              );
+            },
           ),
         ),
       ),

@@ -14,9 +14,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final ForgotPasswordUseCase _forgotPasswordUseCase;
   final VerifyOtpUseCase _verifyOtpUseCase = VerifyOtpUseCase();
   final ResetPasswordUseCase _resetPasswordUseCase = ResetPasswordUseCase();
+  final AuthRepository _repository;
 
   AuthBloc(AuthRepository repository)
-      : _loginUseCase = LoginUseCase(repository),
+      : _repository = repository,
+        _loginUseCase = LoginUseCase(repository),
         _signupUseCase = SignupUseCase(repository),
         _forgotPasswordUseCase = ForgotPasswordUseCase(repository),
         super(AuthState.initial()) {
@@ -25,6 +27,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<ForgotPasswordSubmitted>(_onForgotPasswordSubmitted);
     on<OtpSubmitted>(_onOtpSubmitted);
     on<ResetPasswordSubmitted>(_onResetPasswordSubmitted);
+    on<LogoutRequested>(_onLogoutRequested);
+  }
+
+  Future<void> _onLogoutRequested(
+      LogoutRequested event, Emitter<AuthState> emit) async {
+    // Show loading and reset success flag so navigation listener can fire correctly
+    emit(state.copyWith(isLoading: true, isSuccess: false));
+    try {
+      await _repository.signOut();
+      emit(AuthState.initial().copyWith(isSuccess: true));
+    } catch (e) {
+      emit(state.copyWith(isLoading: false, isSuccess: false));
+    }
   }
 
   // ── Login ──

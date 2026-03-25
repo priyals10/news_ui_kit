@@ -67,3 +67,6 @@ class ResetPasswordSubmitted extends AuthEvent {
   @override
   List<Object?> get props => [newPassword, confirmPassword];
 }
+
+// ── Logout ──
+class LogoutRequested extends AuthEvent {}

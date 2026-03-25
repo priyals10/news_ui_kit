@@ -19,7 +19,7 @@ class AppTheme {
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.light,
     statusBarBrightness: Brightness.dark,
-    systemNavigationBarColor: Color(0xFF212121), // Matches Colors.grey[900]
+    systemNavigationBarColor: Color(0xFF111111),
     systemNavigationBarIconBrightness: Brightness.light,
   );
 
@@ -135,17 +135,20 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.dark,
     primaryColor: AppColors.primary,
-    scaffoldBackgroundColor: Colors.black,
+    scaffoldBackgroundColor: const Color(0xFF111111),
     colorScheme: ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
       primary: AppColors.primary,
-      surface: Colors.grey[900]!,
+      surface: const Color(0xFF111111),
+      onSurface: Colors.white,
+      onSurfaceVariant: Colors.white70,
     ),
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.black,
+      backgroundColor: Color(0xFF111111),
       elevation: 0,
       scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       iconTheme: IconThemeData(color: Colors.white),
       titleTextStyle: TextStyle(
         fontSize: 20,
@@ -190,7 +193,7 @@ class AppTheme {
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: Colors.grey[900],
+      fillColor: const Color(0xFF1A1A1A),
       contentPadding: const EdgeInsets.symmetric(
         horizontal: AppSizes.inputPaddingH,
         vertical: AppSizes.inputPaddingV,
@@ -200,7 +203,7 @@ class AppTheme {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSizes.radiusM),
-        borderSide: const BorderSide(color: AppColors.greyBorder),
+        borderSide: const BorderSide(color: Color(0xFF444444)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AppSizes.radiusM),

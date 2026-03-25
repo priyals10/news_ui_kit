@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
@@ -9,7 +10,9 @@ import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
 import 'package:news_ui_kit/features/auth/data/user_model.dart';
-import 'package:news_ui_kit/features/auth/data/user_repository.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/profile_bloc.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/profile_event.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/profile_state.dart';
 
 class FillProfileScreen extends StatefulWidget {
   const FillProfileScreen({super.key});
@@ -23,11 +26,8 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
   final TextEditingController fullNameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController phoneController = TextEditingController();
-
   final ImagePicker _picker = ImagePicker();
-  final UserRepository _userRepository = UserRepository();
   File? _profileImage;
-  bool _isLoading = false;
 
   String? emailError;
   String? phoneError;
@@ -88,7 +88,7 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     );
   }
 
-  Future<void> _validateAndSubmit() async {
+  void _validateAndSubmit() {
     setState(() {
       if (emailController.text.isEmpty) {
         emailError = AppStrings.emailRequired;
@@ -109,47 +109,27 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     });
 
     if (emailError == null && phoneError == null) {
-      setState(() => _isLoading = true);
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+      if (firebaseUser == null) return;
 
-      try {
-        final firebaseUser = FirebaseAuth.instance.currentUser;
-        if (firebaseUser == null) return;
+      final country = ModalRoute.of(context)?.settings.arguments as String? ?? '';
 
-        final country = ModalRoute.of(context)?.settings.arguments as String? ?? '';
+      final userModel = UserModel(
+        uid: firebaseUser.uid,
+        username: usernameController.text.trim(),
+        fullName: fullNameController.text.trim(),
+        email: emailController.text.trim(),
+        phone: phoneController.text.trim(),
+        country: country,
+        photoUrl: '', // Will be updated by BLoC
+      );
 
-        // Upload profile image if selected
-        String photoUrl = '';
-        if (_profileImage != null) {
-          photoUrl = await _userRepository.uploadProfileImage(
+      context.read<ProfileBloc>().add(UpdateProfile(
             uid: firebaseUser.uid,
-            imageFile: _profileImage!,
-          );
-        }
-
-        final userModel = UserModel(
-          uid: firebaseUser.uid,
-          username: usernameController.text.trim(),
-          fullName: fullNameController.text.trim(),
-          email: emailController.text.trim(),
-          phone: phoneController.text.trim(),
-          country: country,
-          photoUrl: photoUrl,
-        );
-
-        await _userRepository.saveUserProfile(userModel);
-
-        if (mounted) {
-          Navigator.pushReplacementNamed(context, AppRouter.home);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to save profile: $e')),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isLoading = false);
-      }
+            currentUser: userModel,
+            updatedFields: userModel.toMap(),
+            newProfileImagePath: _profileImage?.path,
+          ));
     }
   }
 
@@ -158,110 +138,126 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       resizeToAvoidBottomInset: true,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(
-            left: AppSizes.screenPaddingH,
-            right: AppSizes.screenPaddingH,
-            bottom: MediaQuery.of(context).viewInsets.bottom + AppSizes.spacingXL,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSizes.spacingXL),
+      body: BlocListener<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileUpdateSuccess) {
+            Navigator.pushReplacementNamed(context, AppRouter.home);
+          } else if (state is ProfileError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          }
+        },
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              left: AppSizes.screenPaddingH,
+              right: AppSizes.screenPaddingH,
+              bottom: MediaQuery.of(context).viewInsets.bottom + AppSizes.spacingXL,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: AppSizes.spacingXL),
 
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: Text(AppStrings.fillYourProfile, style: AppTextStyles.headingSmall(context)),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                ],
-              ),
-
-              const SizedBox(height: AppSizes.spacingXXL),
-
-              Center(
-                child: Stack(
+                Row(
                   children: [
-                    CircleAvatar(
-                      radius: AppSizes.avatarRadius,
-                      backgroundColor: AppColors.greyLight,
-                      backgroundImage:
-                          _profileImage != null ? FileImage(_profileImage!) : null,
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: const Icon(Icons.arrow_back),
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: GestureDetector(
-                        onTap: _showImageSourceSheet,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: AppColors.primary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.camera_alt, size: 18, color: AppColors.white),
-                        ),
+                    Expanded(
+                      child: Center(
+                        child: Text(AppStrings.fillYourProfile, style: AppTextStyles.headingSmall(context)),
                       ),
                     ),
+                    const SizedBox(width: 24),
                   ],
                 ),
-              ),
 
-              const SizedBox(height: AppSizes.spacingXXL),
+                const SizedBox(height: AppSizes.spacingXXL),
 
-              AuthTextField(
-                label: AppStrings.username,
-                controller: usernameController,
-                isRequired: false,
-              ),
-
-              AuthTextField(
-                label: AppStrings.fullName,
-                controller: fullNameController,
-                isRequired: false,
-              ),
-
-              AuthTextField(
-                label: AppStrings.emailAddress,
-                controller: emailController,
-                errorText: emailError,
-                keyboardType: TextInputType.emailAddress,
-              ),
-
-              AuthTextField(
-                label: AppStrings.phoneNumber,
-                controller: phoneController,
-                errorText: phoneError,
-                keyboardType: TextInputType.phone,
-              ),
-
-              const SizedBox(height: AppSizes.spacingXXL),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _validateAndSubmit,
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: AppColors.white,
+                Center(
+                  child: Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: AppSizes.avatarRadius,
+                        backgroundColor: AppColors.greyLight,
+                        backgroundImage:
+                            _profileImage != null ? FileImage(_profileImage!) : null,
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: GestureDetector(
+                          onTap: _showImageSourceSheet,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: const BoxDecoration(
+                              color: AppColors.primary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.camera_alt, size: 18, color: AppColors.white),
                           ),
-                        )
-                      : const Text(AppStrings.next),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+
+                const SizedBox(height: AppSizes.spacingXXL),
+
+                AuthTextField(
+                  label: AppStrings.username,
+                  controller: usernameController,
+                  isRequired: false,
+                ),
+
+                AuthTextField(
+                  label: AppStrings.fullName,
+                  controller: fullNameController,
+                  isRequired: false,
+                ),
+
+                AuthTextField(
+                  label: AppStrings.emailAddress,
+                  controller: emailController,
+                  errorText: emailError,
+                  keyboardType: TextInputType.emailAddress,
+                ),
+
+                AuthTextField(
+                  label: AppStrings.phoneNumber,
+                  controller: phoneController,
+                  errorText: phoneError,
+                  keyboardType: TextInputType.phone,
+                ),
+
+                const SizedBox(height: AppSizes.spacingXXL),
+
+                BlocBuilder<ProfileBloc, ProfileState>(
+                  builder: (context, state) {
+                    final isLoading = state is ProfileLoading;
+                    return SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: isLoading ? null : _validateAndSubmit,
+                        child: isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: AppColors.white,
+                                ),
+                              )
+                            : const Text(AppStrings.next),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),

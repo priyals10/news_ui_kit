@@ -1,3 +1,12 @@
+/// Keys used with SharedPreferences (or any future storage backend).
+/// Using constants prevents typos and makes future migrations trivial.
+class AppPrefsKeys {
+  AppPrefsKeys._();
+
+  static const String hasSeenOnboarding = 'has_seen_onboarding';
+  static const String rememberMe = 'remember_me';
+}
+
 class AppStrings {
   AppStrings._();
 

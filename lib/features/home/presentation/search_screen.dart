@@ -1,12 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
-import 'package:news_ui_kit/features/home/presentation/bloc/news_bloc.dart';
-import 'package:news_ui_kit/features/home/presentation/bloc/news_event.dart';
-import 'package:news_ui_kit/features/home/presentation/bloc/news_state.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/search_bloc.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/search_event.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/search_state.dart';
 import 'package:news_ui_kit/features/home/presentation/widgets/latest_article_tile.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -31,6 +33,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();
@@ -38,9 +41,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onSearch() {
     final query = _controller.text.trim();
-    if (query.isNotEmpty) {
-      context.read<NewsBloc>().add(SearchNews(query));
-    }
+    context.read<SearchBloc>().add(SearchNews(query));
   }
 
   @override
@@ -54,7 +55,7 @@ class _SearchScreenState extends State<SearchScreen> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, color: colorScheme.onSurface),
           onPressed: () {
-            context.read<NewsBloc>().add(const FetchTopHeadlines());
+            context.read<SearchBloc>().add(ClearSearch());
             Navigator.pop(context);
           },
         ),
@@ -65,9 +66,12 @@ class _SearchScreenState extends State<SearchScreen> {
             focusNode: _focusNode,
             textInputAction: TextInputAction.search,
             onSubmitted: (_) => _onSearch(),
-            onChanged: (_) {
-              setState(() {}); 
-              _onSearch();
+            onChanged: (value) {
+              setState(() {});
+              if (_debounce?.isActive ?? false) _debounce?.cancel();
+              _debounce = Timer(const Duration(milliseconds: 500), () {
+                _onSearch();
+              });
             },
             textAlignVertical: TextAlignVertical.center,
             style: TextStyle(fontSize: 16, color: colorScheme.onSurface),
@@ -119,7 +123,7 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
-      body: BlocBuilder<NewsBloc, NewsState>(
+      body: BlocBuilder<SearchBloc, SearchState>(
         builder: (context, state) {
           if (state is SearchLoading) {
             return const Center(child: CircularProgressIndicator());

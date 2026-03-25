@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
-import 'package:news_ui_kit/features/home/data/repositories/bookmark_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:news_ui_kit/features/home/presentation/bloc/bookmark_bloc.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 
 class BookmarkScreen extends StatefulWidget {
@@ -14,9 +15,13 @@ class BookmarkScreen extends StatefulWidget {
 }
 
 class _BookmarkScreenState extends State<BookmarkScreen> {
-  final BookmarkRepository _bookmarkRepository = BookmarkRepository();
   String _searchQuery = '';
 
+  @override
+  void initState() {
+    super.initState();
+    context.read<BookmarkBloc>().add(LoadBookmarks());
+  }
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -64,14 +69,36 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
           ),
 
           Expanded(
-            child: StreamBuilder<List<NewsArticle>>(
-              stream: _bookmarkRepository.getBookmarksStream(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
+            child: BlocConsumer<BookmarkBloc, BookmarkState>(
+              listener: (context, state) {
+                if (state.error != null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(state.error!)),
+                  );
+                }
+              },
+              builder: (context, state) {
+                if (state.isLoading && state.bookmarks.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                final allBookmarks = snapshot.data ?? [];
+                if (state.error != null && state.bookmarks.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                          const SizedBox(height: 16),
+                          Text(state.error!, textAlign: TextAlign.center),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
+                final allBookmarks = state.bookmarks;
 
                 // Filter bookmarks based on search query
                 final bookmarks =

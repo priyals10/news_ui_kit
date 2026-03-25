@@ -3,8 +3,9 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
 import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/auth/domain/repositories/user_repository.dart' as domain;
 
-class UserRepository {
+class UserRepository implements domain.UserRepository {
   final FirebaseFirestore _firestore;
 
   // Cloudinary config
@@ -18,11 +19,13 @@ class UserRepository {
       _firestore.collection('users');
 
   // ── Save User Profile ──
+  @override
   Future<void> saveUserProfile(UserModel user) async {
     await _usersCollection.doc(user.uid).set(user.toMap());
   }
 
   // ── Get User Profile ──
+  @override
   Future<UserModel?> getUserProfile(String uid) async {
     final doc = await _usersCollection.doc(uid).get();
     if (doc.exists && doc.data() != null) {
@@ -32,22 +35,26 @@ class UserRepository {
   }
 
   // ── Update User Profile ──
+  @override
   Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
     await _usersCollection.doc(uid).update(data);
   }
 
   // ── Save or Update User Profile (creates doc if missing) ──
+  @override
   Future<void> saveOrUpdateProfile(String uid, Map<String, dynamic> data) async {
     await _usersCollection.doc(uid).set(data, SetOptions(merge: true));
   }
 
   // ── Check if profile exists ──
+  @override
   Future<bool> profileExists(String uid) async {
     final doc = await _usersCollection.doc(uid).get();
     return doc.exists;
   }
 
   // ── Upload Profile Image (Cloudinary) ──
+  @override
   Future<String> uploadProfileImage({
     required String uid,
     required File imageFile,

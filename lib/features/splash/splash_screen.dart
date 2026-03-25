@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:news_ui_kit/core/utils/preferences_helper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -21,21 +21,21 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Future.delayed(const Duration(seconds: 3), () async {
       if (mounted) {
-        final prefs = await SharedPreferences.getInstance();
-        final rememberMe = prefs.getBool('remember_me') ?? true;
-        
+        // Use PreferencesHelper — not raw SharedPreferences
+        final rememberMe = await PreferencesHelper.getRememberMe();
+
         if (!rememberMe) {
           await FirebaseAuth.instance.signOut();
         }
 
-        final hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+        final hasSeenOnboarding = await PreferencesHelper.getHasSeenOnboarding();
 
         final isLoggedIn = FirebaseAuth.instance.currentUser != null;
         if (mounted) {
           Navigator.pushReplacementNamed(
             context,
-            isLoggedIn 
-              ? AppRouter.home 
+            isLoggedIn
+              ? AppRouter.home
               : (hasSeenOnboarding ? AppRouter.login : AppRouter.onboarding),
           );
         }
@@ -80,4 +80,3 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-
