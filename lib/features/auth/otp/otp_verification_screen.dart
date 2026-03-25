@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +7,7 @@ import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
+import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
@@ -55,7 +56,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         maxLength: 1,
         textAlign: TextAlign.center,
-        style: AppTextStyles.otpDigit,
+        style: AppTextStyles.otpDigit(context),
         decoration: InputDecoration(
           counterText: "",
           border: OutlineInputBorder(
@@ -99,7 +100,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthBloc(),
+      create: (_) => AuthBloc(AuthRepository()),
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.isSuccess) {
@@ -108,21 +109,21 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: AppBar(),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.surface),
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
                 child: Column(
                   children: [
                     const SizedBox(height: AppSizes.spacingXL),
-                    const Text(AppStrings.otpVerification, style: AppTextStyles.headingOtp),
+                    Text(AppStrings.otpVerification, style: AppTextStyles.headingOtp(context)),
                     const SizedBox(height: AppSizes.spacingSM),
 
                     Text(
                       "${AppStrings.enterOtpSentTo}${widget.contact}",
                       textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium,
+                      style: AppTextStyles.bodyMedium(context),
                     ),
 
                     const SizedBox(height: AppSizes.spacingXXL),
@@ -141,14 +142,14 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                     const SizedBox(height: AppSizes.spacingS),
 
                     if (state.otpError != null)
-                      Text(state.otpError!, style: AppTextStyles.error),
+                      Text(state.otpError!, style: AppTextStyles.error(context)),
 
                     const SizedBox(height: AppSizes.spacingXL),
 
                     RichText(
                       text: TextSpan(
                         text: AppStrings.resendCodeIn,
-                        style: AppTextStyles.bodySmall,
+                        style: AppTextStyles.bodySmall(context),
                         children: [
                           TextSpan(
                             text: "${secondsRemaining}s",
