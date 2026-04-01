@@ -1,11 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_ui_kit/core/constants/app_colors.dart';
+
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
+import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
@@ -29,7 +30,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => AuthBloc(),
+      create: (_) => AuthBloc(AuthRepository()),
       child: BlocConsumer<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state.isSuccess && state.validatedContact != null) {
@@ -42,8 +43,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         },
         builder: (context, state) {
           return Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: AppBar(),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.surface),
             body: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
@@ -51,9 +52,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SizedBox(height: AppSizes.spacingMD),
-                    const Text(AppStrings.forgotPasswordTitle, style: AppTextStyles.headingMedium),
+                    Text(AppStrings.forgotPasswordTitle, style: AppTextStyles.headingMedium(context)),
                     const SizedBox(height: AppSizes.spacingM),
-                    const Text(AppStrings.forgotPasswordDesc, style: AppTextStyles.bodyMedium),
+                    Text(AppStrings.forgotPasswordDesc, style: AppTextStyles.bodyMedium(context)),
                     const SizedBox(height: AppSizes.spacingXL),
 
                     AuthTextField(
@@ -69,7 +70,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: ElevatedButton(
                         onPressed: () {
                           context.read<AuthBloc>().add(
-                            ForgotPasswordSubmitted(emailOrMobile: emailController.text),
+                            ForgotPasswordSubmitted(email: emailController.text),
                           );
                         },
                         child: const Text(AppStrings.submit),

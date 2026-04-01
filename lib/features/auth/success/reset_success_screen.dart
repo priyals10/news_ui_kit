@@ -1,6 +1,6 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
-import 'package:news_ui_kit/core/constants/app_colors.dart';
+
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
@@ -12,7 +12,7 @@ class ResetSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
@@ -26,15 +26,15 @@ class ResetSuccessScreen extends StatelessWidget {
 
               Text(
                 AppStrings.congratulations,
-                style: AppTextStyles.headingMedium.copyWith(fontSize: 34),
+                style: AppTextStyles.headingMedium(context).copyWith(fontSize: 34),
               ),
 
               const SizedBox(height: AppSizes.spacingS),
 
-              const Text(
+              Text(
                 AppStrings.accountReady,
                 textAlign: TextAlign.center,
-                style: AppTextStyles.bodySmall,
+                style: AppTextStyles.bodySmall(context),
               ),
 
               const Spacer(),

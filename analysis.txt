@@ -1,0 +1,20 @@
+Analyzing news_ui_kit...                                        
+
+   info - The member 'saveUserProfile' overrides an inherited member but isn't annotated with '@override' - lib\features\auth\data\user_repository.dart:22:16 - annotate_overrides
+   info - The member 'getUserProfile' overrides an inherited member but isn't annotated with '@override' - lib\features\auth\data\user_repository.dart:27:22 - annotate_overrides
+   info - The member 'updateUserProfile' overrides an inherited member but isn't annotated with '@override' - lib\features\auth\data\user_repository.dart:36:16 - annotate_overrides
+   info - The member 'saveOrUpdateProfile' overrides an inherited member but isn't annotated with '@override' - lib\features\auth\data\user_repository.dart:41:16 - annotate_overrides
+   info - The member 'profileExists' overrides an inherited member but isn't annotated with '@override' - lib\features\auth\data\user_repository.dart:46:16 - annotate_overrides
+   info - The member 'uploadProfileImage' overrides an inherited member but isn't annotated with '@override' - lib\features\auth\data\user_repository.dart:52:18 - annotate_overrides
+   info - The member 'addBookmark' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\bookmark_repository.dart:23:16 - annotate_overrides
+   info - The member 'removeBookmark' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\bookmark_repository.dart:37:16 - annotate_overrides
+   info - The member 'isBookmarked' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\bookmark_repository.dart:48:16 - annotate_overrides
+   info - The member 'getBookmarks' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\bookmark_repository.dart:61:29 - annotate_overrides
+   info - The member 'getBookmarksStream' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\bookmark_repository.dart:75:29 - annotate_overrides
+   info - The member 'createUserNews' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\user_news_repository.dart:8:16 - annotate_overrides
+   info - The member 'updateUserNews' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\user_news_repository.dart:12:16 - annotate_overrides
+   info - The member 'deleteUserNews' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\user_news_repository.dart:16:16 - annotate_overrides
+   info - The member 'getUserNews' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\user_news_repository.dart:21:31 - annotate_overrides
+   info - The member 'getUserNewsStream' overrides an inherited member but isn't annotated with '@override' - lib\features\home\data\repositories\user_news_repository.dart:35:31 - annotate_overrides
+   info - The member 'build' overrides an inherited member but isn't annotated with '@override' - lib\features\home\presentation\bookmark_screen.dart:25:10 - annotate_overrides
+

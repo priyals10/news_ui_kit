@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart' as picker;
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
@@ -62,7 +62,7 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldLight,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingHSmall),
@@ -76,9 +76,9 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
                     onTap: () => Navigator.pop(context),
                     child: const Icon(Icons.arrow_back),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: Center(
-                      child: Text(AppStrings.chooseYourTopics, style: AppTextStyles.headingSmall),
+                      child: Text(AppStrings.chooseYourTopics, style: AppTextStyles.headingSmall(context)),
                     ),
                   ),
                   const SizedBox(width: 24),
@@ -118,15 +118,21 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
                               vertical: 15,
                             ),
                             decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.white,
+                              color: isSelected 
+                                ? AppColors.primary 
+                                : (Theme.of(context).brightness == Brightness.dark ? Colors.transparent : AppColors.white),
                               borderRadius: BorderRadius.circular(AppSizes.radiusS),
-                              border: Border.all(color: AppColors.primary),
+                              border: Border.all(
+                                color: isSelected 
+                                  ? AppColors.primary 
+                                  : (Theme.of(context).brightness == Brightness.dark ? Colors.grey[800]! : AppColors.primary)
+                              ),
                             ),
                             child: Text(
                               topic,
-                              style: isSelected
-                                  ? AppTextStyles.chipTextSelected
-                                  : AppTextStyles.chipText,
+                                style: isSelected
+                                  ? AppTextStyles.chipTextSelected(context)
+                                  : AppTextStyles.chipText(context),
                             ),
                           ),
                         );
@@ -140,7 +146,11 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
                 text: AppStrings.next,
                 isEnabled: selectedTopics.isNotEmpty,
                 onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.chooseNewsSources);
+                  Navigator.pushNamed(
+                    context,
+                    AppRouter.chooseNewsSources,
+                    arguments: widget.selectedCountry.name,
+                  );
                 },
               ),
 
