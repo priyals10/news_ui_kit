@@ -21,6 +21,10 @@ import 'package:news_ui_kit/features/auth/data/user_repository.dart' as data_use
 import 'package:news_ui_kit/features/home/domain/use_cases/bookmark_use_cases.dart';
 import 'package:news_ui_kit/features/auth/domain/use_cases/user_use_cases.dart';
 import 'package:news_ui_kit/features/home/domain/repositories/user_news_repository.dart' as domain_news;
+import 'package:isar/isar.dart';
+import 'package:news_ui_kit/core/network_info.dart';
+import 'package:news_ui_kit/features/home/data/data_sources/user_news_local_data_source.dart';
+import 'package:news_ui_kit/features/home/data/data_sources/user_news_remote_data_source.dart';
 
 
 import 'package:news_ui_kit/core/theme/theme_mode_notifier.dart';
@@ -31,8 +35,11 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Wire up: DataSource → Repository → UseCases → BLoC
+    final isar = Isar.getInstance()!;
+    final networkInfo = NetworkInfo();
+
     final dataSource = NewsRemoteDataSource();
-    final repository = NewsRepositoryImpl(dataSource);
+    final repository = NewsRepositoryImpl(dataSource, isar, networkInfo);
     final getTopHeadlines = GetTopHeadlinesUseCase(repository);
     final getHeadlinesByCategory = GetHeadlinesByCategoryUseCase(repository);
     final searchArticles = SearchArticlesUseCase(repository);
@@ -47,7 +54,15 @@ class App extends StatelessWidget {
     final uploadImage = UploadProfileImageUseCase(userRepo);
     final saveOrUpdateProfile = SaveOrUpdateProfileUseCase(userRepo);
 
-    final userNewsRepo = data_news.UserNewsRepository();
+    // Offline-First Setup
+    final userNewsLocal = UserNewsLocalDataSource(isar);
+    final userNewsRemote = UserNewsRemoteDataSource();
+
+    final userNewsRepo = data_news.UserNewsRepository(
+      localDataSource: userNewsLocal,
+      remoteDataSource: userNewsRemote,
+      networkInfo: networkInfo,
+    );
     final getUserNews = domain_news.GetUserNewsUseCase(userNewsRepo);
     final deleteUserNews = domain_news.DeleteUserNewsUseCase(userNewsRepo);
     final createUserNews = domain_news.CreateUserNewsUseCase(userNewsRepo);

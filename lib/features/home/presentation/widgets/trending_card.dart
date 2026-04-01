@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 
@@ -29,10 +30,13 @@ class TrendingCard extends StatelessWidget {
         children: [
           // ── Background image ──
           if (article.imageUrl.isNotEmpty)
-            Image.network(
-              article.imageUrl,
+            CachedNetworkImage(
+              imageUrl: article.imageUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const ColoredBox(
+              placeholder: (context, url) => Container(
+                color: AppColors.greyDark.withValues(alpha: 0.3),
+              ),
+              errorWidget: (context, url, error) => const ColoredBox(
                 color: AppColors.greyDark,
                 child: Center(
                   child: Icon(Icons.broken_image, color: AppColors.white, size: 40),

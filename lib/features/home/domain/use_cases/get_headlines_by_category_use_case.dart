@@ -7,7 +7,7 @@ class GetHeadlinesByCategoryUseCase {
 
   GetHeadlinesByCategoryUseCase(this.repository);
 
-  Future<List<NewsArticle>> call({required String category, String country = 'us'}) {
+  Stream<List<NewsArticle>> call({required String category, String country = 'us'}) {
     return repository.getTopHeadlinesByCategory(
       category: category,
       country: country,

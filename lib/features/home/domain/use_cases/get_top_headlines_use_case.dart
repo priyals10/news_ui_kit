@@ -8,7 +8,7 @@ class GetTopHeadlinesUseCase {
 
   GetTopHeadlinesUseCase(this.repository);
 
-  Future<List<NewsArticle>> call({String country = 'us'}) {
+  Stream<List<NewsArticle>> call({String country = 'us'}) {
     return repository.getTopHeadlines(country: country);
   }
 }

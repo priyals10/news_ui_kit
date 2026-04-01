@@ -31,10 +31,18 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     Emitter<NewsState> emit,
   ) async {
     emit(NewsLoading());
+
     try {
       _categoryCache.clear();
-      final articles = await _getTopHeadlines();
-      emit(NewsLoaded(articles));
+      await emit.forEach<List<NewsArticle>>(
+        _getTopHeadlines(),
+        onData: (articles) {
+          // Pulse 1 or 2: Articles are returned
+          return NewsLoaded(articles);
+        },
+        onError: (e, _) => NewsError(_cleanErrorMessage(e)),
+      );
+
       // Auto-fetch latest (All) after trending loads
       add(const FetchHeadlinesByCategory('All'));
     } catch (e) {
@@ -47,20 +55,17 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
     Emitter<NewsState> emit,
   ) async {
     final currentState = state;
-    
-    // Load from cache instantly if available to prevent redundant API calls
-    if (_categoryCache.containsKey(event.category)) {
-      if (currentState is NewsLoaded) {
-        emit(currentState.copyWith(
-          latestArticles: _categoryCache[event.category],
-          selectedCategory: event.category,
-          isLatestLoading: false,
-        ));
-      }
-      return;
+
+    // Load from memory cache instantly if available (Very rare now with Isar, but good to keep)
+    if (_categoryCache.containsKey(event.category) && currentState is NewsLoaded) {
+      emit(currentState.copyWith(
+        latestArticles: _categoryCache[event.category],
+        selectedCategory: event.category,
+        isLatestLoading: false,
+      ));
     }
 
-    // Keep trending articles while loading latest
+    // Prepare UI state
     if (currentState is NewsLoaded) {
       emit(currentState.copyWith(
         isLatestLoading: true,
@@ -85,19 +90,26 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
           apiCategory = event.category.toLowerCase();
       }
 
-      final latestArticles = apiCategory == null
-          ? await _getTopHeadlines()
-          : await _getHeadlinesByCategory(category: apiCategory);
-          
-      _categoryCache[event.category] = latestArticles;
+      final stream = apiCategory == null
+          ? _getTopHeadlines()
+          : _getHeadlinesByCategory(category: apiCategory);
 
-      if (state is NewsLoaded) {
-        emit((state as NewsLoaded).copyWith(
-          latestArticles: latestArticles,
-          selectedCategory: event.category,
-          isLatestLoading: false,
-        ));
-      }
+      await emit.forEach<List<NewsArticle>>(
+        stream,
+        onData: (latestArticles) {
+          _categoryCache[event.category] = latestArticles;
+          final current = state;
+          if (current is NewsLoaded) {
+            return current.copyWith(
+              latestArticles: latestArticles,
+              selectedCategory: event.category,
+              isLatestLoading: false,
+            );
+          }
+          return NewsLoaded(latestArticles, selectedCategory: event.category);
+        },
+        onError: (e, _) => state is NewsLoaded ? (state as NewsLoaded).copyWith(isLatestLoading: false) : NewsError(_cleanErrorMessage(e)),
+      );
     } catch (e) {
       if (state is NewsLoaded) {
         emit((state as NewsLoaded).copyWith(

@@ -58,6 +58,10 @@ dependencies:
   shared_preferences: ^2.5.4
   url_launcher: ^6.3.2
   dotted_border: ^3.1.0
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  path_provider: ^2.1.2
+  connectivity_plus: ^6.0.3
 
   # flutter_country_flags: ^0.0.1
 
@@ -73,6 +77,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  isar_generator: ^3.1.0+1
+  build_runner: ^2.4.8
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

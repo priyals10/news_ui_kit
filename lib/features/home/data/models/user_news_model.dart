@@ -1,3 +1,5 @@
+import 'package:news_ui_kit/features/home/data/models/local_news.dart';
+
 class UserNewsModel {
   final String id;
   final String authorId;
@@ -54,5 +56,18 @@ class UserNewsModel {
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     return '${(diff.inDays / 7).floor()}w ago';
+  }
+
+  LocalNews toLocal({bool isSynced = true}) {
+    return LocalNews()
+      ..firestoreId = id
+      ..authorId = authorId
+      ..authorName = authorName
+      ..authorImage = authorImage
+      ..title = title
+      ..content = content
+      ..coverImageUrl = coverImageUrl
+      ..createdAt = createdAt
+      ..isSynced = isSynced;
   }
 }
