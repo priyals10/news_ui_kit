@@ -32,4 +32,16 @@ class PreferencesHelper {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppPrefsKeys.rememberMe, value);
   }
+
+  // ── Setup Completion ─────────────────────────────────────────────────────
+
+  static Future<bool> getHasCompletedSetup() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('has_completed_setup') ?? false;
+  }
+
+  static Future<void> setHasCompletedSetup(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_completed_setup', value);
+  }
 }

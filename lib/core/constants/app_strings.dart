@@ -130,4 +130,5 @@ class AppStrings {
   static const String phoneRequired = "Phone number is required";
   static const String invalidPhone = "Enter valid phone number";
   static const String pleaseConfirmPassword = "Please confirm your password";
+  static const String noBookmarksFound = "No bookmarks found. Save your favorite stories here!";
 }

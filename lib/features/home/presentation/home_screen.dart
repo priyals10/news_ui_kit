@@ -11,6 +11,10 @@ import 'package:news_ui_kit/features/home/presentation/bloc/news_event.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/news_state.dart';
 import 'package:news_ui_kit/features/home/presentation/widgets/trending_card.dart';
 import 'package:news_ui_kit/features/home/presentation/widgets/latest_article_tile.dart';
+import 'package:news_ui_kit/core/utils/responsive.dart';
+import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
+import 'package:news_ui_kit/features/home/presentation/article_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,8 +28,33 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     final bloc = context.read<NewsBloc>();
-    bloc.add(const FetchTopHeadlines());
+    if (bloc.state is! NewsLoaded) {
+      bloc.add(const FetchTopHeadlines());
+    }
   }
+
+  Widget _buildError(String message) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.screenPaddingH),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+            const SizedBox(height: AppSizes.spacingL),
+            Text(message, textAlign: TextAlign.center),
+            const SizedBox(height: AppSizes.spacingL),
+            ElevatedButton(
+              onPressed: () => context.read<NewsBloc>().add(const FetchTopHeadlines()),
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  double _feedWidthProportion = 0.4; // Default to 40/60 split
 
   @override
   Widget build(BuildContext context) {
@@ -40,29 +69,66 @@ class _HomeScreenState extends State<HomeScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is NewsError) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.all(AppSizes.screenPaddingH),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-                    const SizedBox(height: AppSizes.spacingL),
-                    Text(state.message, textAlign: TextAlign.center),
-                    const SizedBox(height: AppSizes.spacingL),
-                    ElevatedButton(
-                      onPressed: () => context.read<NewsBloc>().add(const FetchTopHeadlines()),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            );
+            return _buildError(state.message);
           }
           if (state is NewsLoaded) {
-            return HomeNewsContent(state: state);
+            final content = HomeNewsContent(state: state);
+            if (context.isMobile) return content;
+
+            final hasSelection = state.selectedArticle != null;
+
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  children: [
+                    // --- NEWS FEED SECTION ---
+                    Expanded(
+                      flex: hasSelection ? (_feedWidthProportion * 100).toInt() : 100,
+                      child: content,
+                    ),
+
+                    if (hasSelection) ...[
+                      // --- RESIZABLE DIVIDER ---
+                      GestureDetector(
+                        onHorizontalDragUpdate: (details) {
+                          if (constraints.maxWidth > 0) {
+                            setState(() {
+                              // Calculate new proportion based on mouse movement
+                              _feedWidthProportion += details.delta.dx / constraints.maxWidth;
+                              // Keep it within reasonable bounds
+                              _feedWidthProportion = _feedWidthProportion.clamp(0.2, 0.8);
+                            });
+                          }
+                        },
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.resizeLeftRight,
+                          child: Container(
+                            width: 10,
+                            color: Colors.transparent, // Invisible wider touch area
+                            child: const VerticalDivider(
+                              width: 1,
+                              thickness: 1,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      // --- ARTICLE DETAIL SECTION ---
+                      Expanded(
+                        flex: ((1 - _feedWidthProportion) * 100).toInt(),
+                        child: ArticleDetailScreen(
+                          key: ValueKey(state.selectedArticle!.title + state.selectedArticle!.sourceName),
+                          article: state.selectedArticle!,
+                          isEmbedded: true,
+                        ),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            );
           }
-          return const SizedBox.shrink();
+          return const Center(child: CircularProgressIndicator());
         },
       ),
     );
@@ -75,13 +141,13 @@ class _HomeScreenState extends State<HomeScreen> {
       elevation: 0,
       automaticallyImplyLeading: false,
       centerTitle: false,
-      titleSpacing: 1,
+      titleSpacing: context.isMobile ? 1 : 24,
       toolbarHeight: 80,
       title: Padding(
         padding: const EdgeInsets.only(top: 20),
         child: Image.asset(
           AppAssets.logo,
-          height: 90,
+          height: context.isMobile ? 90 : 110,
         ),
       ),
       actions: [
@@ -102,89 +168,82 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Refactored Sub-Widgets ──────────────────────────────────────────────────
-
 class HomeNewsContent extends StatelessWidget {
   final NewsLoaded state;
   const HomeNewsContent({super.key, required this.state});
 
+  void _onArticleTap(BuildContext context, NewsArticle article) {
+    if (context.isMobile) {
+      Navigator.pushNamed(
+        context,
+        AppRouter.articleDetail,
+        arguments: article,
+      );
+    } else {
+      context.read<NewsBloc>().add(SelectArticle(article));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    
+    final isSearching = state.searchQuery.isNotEmpty;
+    final searchResults = state.allSearchResults;
+
     final trendingArticles = state.articles.take(5).toList();
-    final latestArticles = state.latestArticles.take(5).toList();
+    final latestArticles = state.latestArticles.take(10).toList();
 
-    return SingleChildScrollView(
+    return WebConstrainedLayout(
+      maxWidth: 1200,
+      padding: EdgeInsets.zero,
+      scrollable: false,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppSizes.spacingL),
+          // Keep the search bar consistent to prevent focus loss
+          const HomeSearchBar(),
+          
+          Expanded(
+            child: isSearching
+                ? (searchResults.isEmpty
+                    ? Center(child: Text('No results found for "${state.searchQuery}"', style: AppTextStyles.greyText(context)))
+                    : ListView.separated(
+                        padding: const EdgeInsets.all(AppSizes.screenPaddingH),
+                        itemCount: searchResults.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 16),
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onTap: () => _onArticleTap(context, searchResults[index]),
+                            child: LatestArticleTile(article: searchResults[index]),
+                          );
+                        },
+                      ))
+                : CustomScrollView(
+                    key: const PageStorageKey('home_news_scroll'),
+                    slivers: [
+                      // ── Trending Header ──
 
-          // ── Search bar ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, AppRouter.searchNews);
-              },
-              child: Container(
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(AppSizes.radiusM),
-                  border: Border.all(color: colorScheme.outline),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  children: [
-                    Icon(Icons.search, color: colorScheme.onSurfaceVariant, size: 24),
-                    const SizedBox(width: 10),
-                    Text(
-                      AppStrings.search,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const Spacer(),
-                    Icon(Icons.tune_rounded, color: colorScheme.onSurfaceVariant, size: 22),
-                  ],
-                ),
-              ),
+        // ── Trending Header ──
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.screenPaddingH,
+              vertical: AppSizes.spacingL,
             ),
-          ),
-
-          const SizedBox(height: AppSizes.spacingXL),
-
-          // ── Section header: Trending ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(AppStrings.trending, style: AppTextStyles.headingSmall(context)),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRouter.trending,
-                      arguments: state.articles,
-                    );
-                  },
-                  child: Text(
-                    AppStrings.seeAll,
-                    style: AppTextStyles.linkButton(context),
-                  ),
+                  onTap: () => Navigator.pushNamed(context, AppRouter.trending, arguments: state.articles),
+                  child: Text(AppStrings.seeAll, style: AppTextStyles.linkButton(context)),
                 ),
               ],
             ),
           ),
+        ),
 
-          const SizedBox(height: AppSizes.spacingL),
-
-          // ── Trending cards ──
-          SizedBox(
+        // ── Trending Cards (Horizontal) ──
+        SliverToBoxAdapter(
+          child: SizedBox(
             height: 250,
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
@@ -193,49 +252,41 @@ class HomeNewsContent extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(width: 14),
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(
-                      context,
-                      AppRouter.articleDetail,
-                      arguments: trendingArticles[index],
-                    );
-                  },
+                  onTap: () => _onArticleTap(context, trendingArticles[index]),
                   child: TrendingCard(
                     article: trendingArticles[index],
-                    width: MediaQuery.of(context).size.width * 0.75,
+                    width: 400,
                   ),
                 );
               },
             ),
           ),
+        ),
 
-          const SizedBox(height: AppSizes.spacingXL),
-
-          // ── Latest header ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
+        // ── Latest header ──
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.screenPaddingH,
+              vertical: AppSizes.spacingXL,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(AppStrings.latest, style: AppTextStyles.headingSmall(context)),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, AppRouter.latest);
-                  },
-                  child: Text(
-                    AppStrings.seeAll,
-                    style: AppTextStyles.linkButton(context),
-                  ),
+                  onTap: () => Navigator.pushNamed(context, AppRouter.latest),
+                  child: Text(AppStrings.seeAll, style: AppTextStyles.linkButton(context)),
                 ),
               ],
             ),
           ),
+        ),
 
-          const SizedBox(height: AppSizes.spacingM),
-
-          // ── Categories ──
-          SizedBox(
-            height: 32,
+        // ── Categories ──
+        SliverToBoxAdapter(
+          child: SizedBox(
+            height: 36,
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
               scrollDirection: Axis.horizontal,
@@ -245,9 +296,7 @@ class HomeNewsContent extends StatelessWidget {
                 final cat = _categories[index];
                 final isSelected = cat == state.selectedCategory;
                 return GestureDetector(
-                  onTap: () {
-                    context.read<NewsBloc>().add(FetchHeadlinesByCategory(cat));
-                  },
+                  onTap: () => context.read<NewsBloc>().add(FetchHeadlinesByCategory(cat)),
                   child: Text(
                     cat,
                     style: TextStyle(
@@ -260,64 +309,118 @@ class HomeNewsContent extends StatelessWidget {
               },
             ),
           ),
+        ),
 
-          const SizedBox(height: AppSizes.spacingL),
+        const SliverToBoxAdapter(child: SizedBox(height: AppSizes.spacingL)),
 
-          // ── Latest articles ──
-          if (state.isLatestLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 32),
-              child: Center(child: CircularProgressIndicator()),
-            )
-          else if (latestArticles.isEmpty && state.selectedCategory != 'All')
-            Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.screenPaddingH,
-                vertical: 32,
+        // ── Latest articles (Adaptive Grid) ──
+        if (state.isLatestLoading)
+          const SliverFillRemaining(hasScrollBody: false, child: Center(child: CircularProgressIndicator()))
+        else if (latestArticles.isEmpty && state.selectedCategory != 'All')
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(child: Text('No articles found', style: AppTextStyles.greyText(context))),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 600,
+                mainAxisExtent: 140, // Increased for premium tile height
+                mainAxisSpacing: 12,
+                crossAxisSpacing: 32,
               ),
-              child: Center(
-                child: Text(
-                  'No articles found for this category',
-                  style: AppTextStyles.greyText(context),
-                ),
-              ),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
-              child: ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: latestArticles.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
                   return LatestArticleTile(
                     article: latestArticles[index],
-                    onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRouter.articleDetail,
-                        arguments: latestArticles[index],
-                      );
-                    },
+                    onTap: () => _onArticleTap(context, latestArticles[index]),
                   );
                 },
+                childCount: latestArticles.length,
               ),
             ),
-
-          const SizedBox(height: AppSizes.spacingXL),
+          ),
+        
+        const SliverToBoxAdapter(child: SizedBox(height: AppSizes.spacingXL)),
+                    ],
+                  ),
+          ),
         ],
       ),
     );
   }
 
   static const List<String> _categories = [
-    AppStrings.all,
-    AppStrings.sports,
-    AppStrings.politics,
-    AppStrings.business,
-    AppStrings.health,
-    AppStrings.travel,
-    AppStrings.science,
+    AppStrings.all, AppStrings.sports, AppStrings.politics,
+    AppStrings.business, AppStrings.health, AppStrings.travel, AppStrings.science,
   ];
+}
+
+class HomeSearchBar extends StatefulWidget {
+  const HomeSearchBar({super.key});
+
+  @override
+  State<HomeSearchBar> createState() => _HomeSearchBarState();
+}
+
+class _HomeSearchBarState extends State<HomeSearchBar> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize with current query from bloc state if it exists
+    final state = context.read<NewsBloc>().state;
+    final currentQuery = state is NewsLoaded ? state.searchQuery : '';
+    _controller = TextEditingController(text: currentQuery);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.screenPaddingH,
+        vertical: AppSizes.spacingL,
+      ),
+      child: TextField(
+        controller: _controller,
+        onChanged: (value) => context.read<NewsBloc>().add(SearchHomeNews(value)),
+        style: TextStyle(color: colorScheme.onSurface),
+        decoration: InputDecoration(
+          hintText: AppStrings.search,
+          prefixIcon: Icon(Icons.search, color: colorScheme.onSurfaceVariant),
+          suffixIcon: _controller.text.isEmpty
+              ? Icon(Icons.tune_rounded, color: colorScheme.onSurfaceVariant, size: 22)
+              : IconButton(
+                  icon: const Icon(Icons.clear, size: 20),
+                  onPressed: () {
+                    _controller.clear();
+                    context.read<NewsBloc>().add(const SearchHomeNews(''));
+                  },
+                ),
+          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+          filled: true,
+          fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
+          contentPadding: const EdgeInsets.symmetric(vertical: 0),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSizes.radiusM),
+            borderSide: BorderSide(color: colorScheme.outline),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppSizes.radiusM),
+            borderSide: BorderSide(color: colorScheme.primary, width: 1.5),
+          ),
+        ),
+      ),
+    );
+  }
 }

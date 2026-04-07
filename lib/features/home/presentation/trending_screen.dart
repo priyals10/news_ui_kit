@@ -13,6 +13,8 @@ class TrendingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
@@ -33,40 +35,81 @@ class TrendingScreen extends StatelessWidget {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {
-              // More options — future feature
-            },
+            onPressed: () {},
             icon: Icon(Icons.more_vert, color: colorScheme.onSurface),
           ),
         ],
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSizes.screenPaddingH,
-          vertical: AppSizes.spacingL,
-        ),
-        itemCount: articles.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 24),
-        itemBuilder: (context, index) {
-          final article = articles[index];
-          return GestureDetector(
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                AppRouter.articleDetail,
-                arguments: article,
-              );
-            },
-            child: _TrendingListCard(article: article),
-          );
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (width > 900) {
+            return GridView.builder(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.screenPaddingH,
+                vertical: AppSizes.spacingL,
+              ),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 24,
+                mainAxisSpacing: 32,
+                mainAxisExtent: 380,
+              ),
+              itemCount: articles.length,
+              itemBuilder: (context, index) {
+                final article = articles[index];
+                return GestureDetector(
+                  onTap: () => Navigator.pushNamed(
+                    context, AppRouter.articleDetail, arguments: article),
+                  child: _TrendingListCard(article: article),
+                );
+              },
+            );
+          } else if (width > 600) {
+            return GridView.builder(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.screenPaddingH,
+                vertical: AppSizes.spacingL,
+              ),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 24,
+                mainAxisSpacing: 32,
+                mainAxisExtent: 380,
+              ),
+              itemCount: articles.length,
+              itemBuilder: (context, index) {
+                final article = articles[index];
+                return GestureDetector(
+                  onTap: () => Navigator.pushNamed(
+                    context, AppRouter.articleDetail, arguments: article),
+                  child: _TrendingListCard(article: article),
+                );
+              },
+            );
+          } else {
+            return ListView.separated(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.screenPaddingH,
+                vertical: AppSizes.spacingL,
+              ),
+              itemCount: articles.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 24),
+              itemBuilder: (context, index) {
+                final article = articles[index];
+                return GestureDetector(
+                  onTap: () => Navigator.pushNamed(
+                    context, AppRouter.articleDetail, arguments: article),
+                  child: _TrendingListCard(article: article),
+                );
+              },
+            );
+          }
         },
       ),
     );
   }
 }
 
-/// Card layout for the See-All trending list:
-/// Image on top with category tag, title below, source + time at bottom.
 class _TrendingListCard extends StatelessWidget {
   final NewsArticle article;
 
@@ -79,38 +122,32 @@ class _TrendingListCard extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Image with category tag ──
         ClipRRect(
           borderRadius: BorderRadius.circular(14),
-          child: Stack(
-            children: [
-              AspectRatio(
-                aspectRatio: 16 / 10,
-                child: article.imageUrl.isNotEmpty
-                    ? Image.network(
-                        article.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: colorScheme.surfaceContainerHighest,
-                          child: Center(
-                            child: Icon(Icons.broken_image, size: 40, color: colorScheme.outline),
-                          ),
-                        ),
-                      )
-                    : Container(
-                        color: colorScheme.surfaceContainerHighest,
-                        child: Center(
-                          child: Icon(Icons.article, size: 40, color: colorScheme.outline),
-                        ),
+          child: AspectRatio(
+            aspectRatio: 16 / 10,
+            child: article.imageUrl.isNotEmpty
+                ? Image.network(
+                    article.imageUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      color: colorScheme.surfaceContainerHighest,
+                      child: Center(
+                        child: Icon(Icons.broken_image, size: 40, color: colorScheme.outline),
                       ),
-              ),
-            ],
+                    ),
+                  )
+                : Container(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: Center(
+                      child: Icon(Icons.article, size: 40, color: colorScheme.outline),
+                    ),
+                  ),
           ),
         ),
 
         const SizedBox(height: 12),
 
-        // ── Title ──
         Text(
           article.title,
           maxLines: 2,
@@ -125,7 +162,6 @@ class _TrendingListCard extends StatelessWidget {
 
         const SizedBox(height: 8),
 
-        // ── Source + time ──
         Row(
           children: [
             CircleAvatar(
@@ -134,12 +170,16 @@ class _TrendingListCard extends StatelessWidget {
               child: Icon(Icons.public, size: 12, color: colorScheme.outline),
             ),
             const SizedBox(width: 6),
-            Text(
-              article.sourceName,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: colorScheme.onSurfaceVariant,
+            Flexible(
+              child: Text(
+                article.sourceName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
             const SizedBox(width: 10),

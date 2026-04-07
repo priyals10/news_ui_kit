@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/foundation.dart';
 import 'package:news_ui_kit/core/theme/app_theme.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/features/home/data/data_sources/news_remote_data_source.dart';
@@ -30,15 +31,22 @@ import 'package:news_ui_kit/features/home/data/data_sources/user_news_remote_dat
 import 'package:news_ui_kit/core/theme/theme_mode_notifier.dart';
 
 class App extends StatelessWidget {
-  const App({super.key});
+  final Isar? isar;
+  const App({super.key, this.isar});
 
   @override
   Widget build(BuildContext context) {
     // Wire up: DataSource → Repository → UseCases → BLoC
-    final isar = Isar.getInstance()!;
-    final networkInfo = NetworkInfo();
+    final isar = this.isar;
+    
+    if (isar == null && !kIsWeb) {
+      debugPrint("Warning: Database instance is null. Offline mode will be disabled.");
+    }
 
+    final networkInfo = NetworkInfo();
     final dataSource = NewsRemoteDataSource();
+    
+    // We pass isar (which might be null on Web)
     final repository = NewsRepositoryImpl(dataSource, isar, networkInfo);
     final getTopHeadlines = GetTopHeadlinesUseCase(repository);
     final getHeadlinesByCategory = GetHeadlinesByCategoryUseCase(repository);
@@ -105,7 +113,7 @@ class App extends StatelessWidget {
           ),
         ),
         BlocProvider(
-          create: (_) => AuthBloc(authRepo),
+          create: (_) => AuthBloc(authRepo, userRepo),
         ),
       ],
       child: ValueListenableBuilder<ThemeMode>(

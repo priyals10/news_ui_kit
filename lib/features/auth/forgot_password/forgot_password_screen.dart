@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
-import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
-import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
-import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
-import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
+import 'package:news_ui_kit/core/widgets/app_ui_kit.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -29,61 +24,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthBloc(AuthRepository()),
-      child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state.isSuccess && state.validatedContact != null) {
-            Navigator.pushNamed(
-              context,
-              AppRouter.otpVerification,
-              arguments: state.validatedContact!,
-            );
-          }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            backgroundColor: Theme.of(context).colorScheme.surface,
-            appBar: AppBar(backgroundColor: Theme.of(context).colorScheme.surface),
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: AppSizes.spacingMD),
-                    Text(AppStrings.forgotPasswordTitle, style: AppTextStyles.headingMedium(context)),
-                    const SizedBox(height: AppSizes.spacingM),
-                    Text(AppStrings.forgotPasswordDesc, style: AppTextStyles.bodyMedium(context)),
-                    const SizedBox(height: AppSizes.spacingXL),
+    return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: WebConstrainedLayout(
+        maxWidth: 500,
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: AppSizes.spacingHuge),
+            Text(AppStrings.forgotPasswordTitle, style: AppTextStyles.headingLarge(context)),
+            const SizedBox(height: AppSizes.spacingM),
+            Text(AppStrings.forgotPasswordDesc, style: AppTextStyles.bodyLarge(context)),
+            const SizedBox(height: 50),
 
-                    AuthTextField(
-                      label: AppStrings.emailOrMobile,
-                      controller: emailController,
-                      errorText: state.emailError,
-                    ),
+            AppTextField(
+              label: AppStrings.email,
+              controller: emailController,
+              hintText: 'Enter your email',
+            ),
 
-                    const Spacer(),
+            const SizedBox(height: AppSizes.spacingXL),
 
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(
-                            ForgotPasswordSubmitted(email: emailController.text),
-                          );
-                        },
-                        child: const Text(AppStrings.submit),
-                      ),
-                    ),
+            AppPrimaryButton(
+              text: AppStrings.submit,
+              onPressed: () => Navigator.pushNamed(context, AppRouter.otpVerification, arguments: emailController.text),
+            ),
 
-                    const SizedBox(height: AppSizes.spacingXL),
-                  ],
-                ),
+            const SizedBox(height: AppSizes.spacingXL),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(AppStrings.back, style: AppTextStyles.linkButton(context)),
               ),
             ),
-          );
-        },
+            const SizedBox(height: AppSizes.spacingHuge),
+          ],
+        ),
       ),
     );
   }

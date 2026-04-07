@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
+import 'package:news_ui_kit/features/auth/domain/repositories/user_repository.dart';
 import 'package:news_ui_kit/features/auth/use_cases/login_use_case.dart';
 import 'package:news_ui_kit/features/auth/use_cases/signup_use_case.dart';
 import 'package:news_ui_kit/features/auth/use_cases/forgot_password_use_case.dart';
@@ -15,11 +16,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final VerifyOtpUseCase _verifyOtpUseCase = VerifyOtpUseCase();
   final ResetPasswordUseCase _resetPasswordUseCase = ResetPasswordUseCase();
   final AuthRepository _repository;
+  final UserRepository _userRepository;
 
-  AuthBloc(AuthRepository repository)
+  AuthBloc(AuthRepository repository, UserRepository userRepository)
       : _repository = repository,
+        _userRepository = userRepository,
         _loginUseCase = LoginUseCase(repository),
-        _signupUseCase = SignupUseCase(repository),
+        _signupUseCase = SignupUseCase(repository, userRepository),
         _forgotPasswordUseCase = ForgotPasswordUseCase(repository),
         super(AuthState.initial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
@@ -53,7 +56,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     if (result.isSuccess) {
-      emit(state.copyWith(errors: {}, isLoading: false, isSuccess: true));
+      // After login success, check if user has a profile in Firestore
+      final firebaseUser = _repository.currentUser;
+      bool hasProfile = false;
+      if (firebaseUser != null) {
+        hasProfile = await _userRepository.profileExists(firebaseUser.uid);
+      }
+      
+      emit(state.copyWith(
+        errors: {}, 
+        isLoading: false, 
+        isSuccess: true,
+        hasProfile: hasProfile,
+      ));
     } else {
       emit(state.copyWith(
           errors: result.errors, isLoading: false, isSuccess: false));

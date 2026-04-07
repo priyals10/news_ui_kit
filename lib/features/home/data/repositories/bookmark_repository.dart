@@ -27,10 +27,10 @@ class BookmarkRepository implements domain.BookmarkRepository {
 
     final docId = "${uid}_${_getArticleId(article)}";
     final data = article.toJson();
-    data['userId'] = uid; // Add userId for easier top-level tracking
+    data['userId'] = uid;
 
     await _firestore
-        .collection('bookmark')
+        .collection('bookmarks')
         .doc(docId)
         .set(data);
   }
@@ -42,7 +42,7 @@ class BookmarkRepository implements domain.BookmarkRepository {
 
     final docId = "${uid}_${_getArticleId(article)}";
     await _firestore
-        .collection('bookmark')
+        .collection('bookmarks')
         .doc(docId)
         .delete();
   }
@@ -54,7 +54,7 @@ class BookmarkRepository implements domain.BookmarkRepository {
 
     final docId = "${uid}_${_getArticleId(article)}";
     final doc = await _firestore
-        .collection('bookmark')
+        .collection('bookmarks')
         .doc(docId)
         .get();
         
@@ -67,7 +67,7 @@ class BookmarkRepository implements domain.BookmarkRepository {
     if (uid == null) return [];
 
     final snapshot = await _firestore
-        .collection('bookmark')
+        .collection('bookmarks')
         .where('userId', isEqualTo: uid)
         .get();
 
@@ -78,15 +78,17 @@ class BookmarkRepository implements domain.BookmarkRepository {
 
   @override
   Stream<List<NewsArticle>> getBookmarksStream() {
-    final uid = _userId;
-    if (uid == null) return Stream.value([]);
-
-    return _firestore
-        .collection('bookmark')
-        .where('userId', isEqualTo: uid)
-        .snapshots()
-        .map((snapshot) => snapshot.docs
-            .map((doc) => NewsArticle.fromJson(doc.data()))
-            .toList());
+    return _auth.authStateChanges().asyncExpand((user) {
+      if (user == null) {
+        return Stream.value(<NewsArticle>[]);
+      }
+      return _firestore
+          .collection('bookmarks')
+          .where('userId', isEqualTo: user.uid)
+          .snapshots()
+          .map((snapshot) => snapshot.docs
+              .map((doc) => NewsArticle.fromJson(doc.data()))
+              .toList());
+    });
   }
 }

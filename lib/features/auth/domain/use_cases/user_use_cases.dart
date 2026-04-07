@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:news_ui_kit/features/auth/data/user_model.dart';
 import 'package:news_ui_kit/features/auth/domain/repositories/user_repository.dart';
 
@@ -33,7 +33,8 @@ class UploadProfileImageUseCase {
   final UserRepository repository;
   UploadProfileImageUseCase(this.repository);
 
-  Future<String> call({required String uid, required File imageFile}) {
+  /// Updated to use [XFile] to avoid dart:io dependency on web.
+  Future<String> call({required String uid, required XFile imageFile}) {
     return repository.uploadProfileImage(uid: uid, imageFile: imageFile);
   }
 }

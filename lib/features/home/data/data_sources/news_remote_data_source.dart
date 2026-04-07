@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:news_ui_kit/features/home/data/models/news_article_model.dart';
 
@@ -30,9 +29,8 @@ class NewsRemoteDataSource {
       } else {
         throw Exception('Failed to load headlines: ${response.statusCode}');
       }
-    } on SocketException {
-      throw Exception(_noInternetMessage);
-    } on http.ClientException {
+    } catch (e) {
+      // Catch all network errors in a cross-platform way
       throw Exception(_noInternetMessage);
     }
   }
@@ -58,9 +56,7 @@ class NewsRemoteDataSource {
       } else {
         throw Exception('Failed to load headlines: ${response.statusCode}');
       }
-    } on SocketException {
-      throw Exception(_noInternetMessage);
-    } on http.ClientException {
+    } catch (e) {
       throw Exception(_noInternetMessage);
     }
   }
@@ -83,11 +79,8 @@ class NewsRemoteDataSource {
       } else {
         throw Exception('Failed to search articles: ${response.statusCode}');
       }
-    } on SocketException {
-      throw Exception(_noInternetMessage);
-    } on http.ClientException {
+    } catch (e) {
       throw Exception(_noInternetMessage);
     }
   }
 }
-

@@ -1,16 +1,18 @@
-import 'dart:io';
-import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
-import 'package:news_ui_kit/core/widgets/app_button.dart';
+import 'package:news_ui_kit/core/widgets/app_ui_kit.dart';
 import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/create_news_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/create_news_event.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/create_news_state.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
+import 'dart:io' as io;
 
 class CreateNewsScreen extends StatefulWidget {
   final UserNewsModel? existingNews;
@@ -24,9 +26,7 @@ class CreateNewsScreen extends StatefulWidget {
 class _CreateNewsScreenState extends State<CreateNewsScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _contentController = TextEditingController();
-
-  // Local state for the picked image path (set from BLoC)
-  String? _pickedImagePath;
+  XFile? _pickedImage;
   String? _existingImageUrl;
 
   @override
@@ -46,26 +46,18 @@ class _CreateNewsScreenState extends State<CreateNewsScreen> {
     super.dispose();
   }
 
-  void _pickImage() {
-    // Delegate to BLoC — no ImagePicker used directly here
-    context.read<CreateNewsBloc>().add(const PickCoverImage());
-  }
+  void _pickImage() => context.read<CreateNewsBloc>().add(const PickCoverImage());
 
   void _submit() {
     final title = _titleController.text.trim();
     final content = _contentController.text.trim();
 
     if (title.isEmpty || content.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter title and content.')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please enter title and content.')));
       return;
     }
-
-    if (_pickedImagePath == null && _existingImageUrl == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please add a cover photo.')),
-      );
+    if (_pickedImage == null && (_existingImageUrl == null || _existingImageUrl!.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please add a cover photo.')));
       return;
     }
 
@@ -75,14 +67,14 @@ class _CreateNewsScreenState extends State<CreateNewsScreen> {
             title: title,
             content: content,
             createdAt: widget.existingNews!.createdAt,
-            imageFilePath: _pickedImagePath,
+            imageFile: _pickedImage,
             existingImageUrl: _existingImageUrl,
           ));
     } else {
       context.read<CreateNewsBloc>().add(PublishNews(
             title: title,
             content: content,
-            imageFilePath: _pickedImagePath,
+            imageFile: _pickedImage,
             existingImageUrl: _existingImageUrl,
           ));
     }
@@ -91,19 +83,16 @@ class _CreateNewsScreenState extends State<CreateNewsScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocConsumer<CreateNewsBloc, CreateNewsState>(
       listener: (context, state) {
         if (state is CreateNewsSuccess) {
           Navigator.pop(context, true);
         } else if (state is CreateNewsFailure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: ${state.message}')),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${state.message}')));
         } else if (state is CoverImagePicked) {
-          // Sync picked image path into local state for display
-          setState(() => _pickedImagePath = state.imagePath);
+          setState(() => _pickedImage = state.imageFile);
         }
       },
       builder: (context, state) {
@@ -112,6 +101,8 @@ class _CreateNewsScreenState extends State<CreateNewsScreen> {
         return Scaffold(
           backgroundColor: colorScheme.surface,
           appBar: AppBar(
+            backgroundColor: colorScheme.surface,
+            elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
               onPressed: () => Navigator.pop(context),
@@ -120,294 +111,108 @@ class _CreateNewsScreenState extends State<CreateNewsScreen> {
               widget.existingNews != null ? 'Edit News' : AppStrings.createNews,
               style: AppTextStyles.headingSmall(context),
             ),
+            centerTitle: true,
             actions: [
               if (widget.existingNews != null)
                 IconButton(
-                  icon: Icon(Icons.delete, color: colorScheme.error),
-                  tooltip: 'Delete Post',
-                  onPressed: () async {
-                    final confirm = await showDialog<bool>(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text('Delete News'),
-                        content: const Text(
-                            'Are you sure you want to delete this post?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx, true),
-                            child: Text('Delete',
-                                style:
-                                    TextStyle(color: colorScheme.error)),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == true && context.mounted) {
-                      context.read<CreateNewsBloc>().add(
-                            DeleteNews(newsId: widget.existingNews!.id),
-                          );
-                    }
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () {
+                    context.read<CreateNewsBloc>().add(DeleteNews(newsId: widget.existingNews!.id));
                   },
-                )
-              else
-                IconButton(
-                  icon: const Icon(Icons.more_vert),
-                  onPressed: () {},
                 ),
             ],
           ),
-          body: isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: AppSizes.screenPaddingH),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 24),
-
-                      // Cover Photo Picker
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: CustomPaint(
-                          painter: DashedBorderPainter(
-                            color: isDark
-                                ? colorScheme.outline
-                                : AppColors.greyLight,
-                            strokeWidth: 2,
-                            radius: const Radius.circular(12),
-                          ),
-                          child: Container(
-                            width: double.infinity,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? colorScheme.surfaceContainerHighest
-                                  : AppColors.white,
-                              borderRadius: BorderRadius.circular(12),
-                              image: _pickedImagePath != null
-                                  ? DecorationImage(
-                                      image: FileImage(
-                                          File(_pickedImagePath!)),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : (_existingImageUrl != null
-                                      ? DecorationImage(
-                                          image: NetworkImage(
-                                              _existingImageUrl!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null),
-                            ),
-                            child: _pickedImagePath == null &&
-                                    _existingImageUrl == null
-                                ? Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      Icon(Icons.add,
-                                          size: 32,
-                                          color:
-                                              colorScheme.onSurfaceVariant),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        AppStrings.addCoverPhoto,
-                                        style: TextStyle(
-                                            color: colorScheme
-                                                .onSurfaceVariant),
-                                      ),
-                                    ],
-                                  )
-                                : Align(
-                                    alignment: Alignment.bottomRight,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Container(
-                                        decoration: const BoxDecoration(
-                                          color: Colors.black54,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: IconButton(
-                                          icon: const Icon(Icons.edit,
-                                              color: Colors.white, size: 20),
-                                          onPressed: _pickImage,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Title Field
-                      TextField(
-                        controller: _titleController,
-                        style: AppTextStyles.headingSmall(context).copyWith(
-                          fontWeight: FontWeight.normal,
-                        ),
-                        decoration: InputDecoration(
-                          hintText: AppStrings.newsTitle,
-                          hintStyle:
-                              AppTextStyles.headingSmall(context).copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                            fontWeight: FontWeight.normal,
-                          ),
-                          border: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                                color: isDark
-                                    ? colorScheme.outline
-                                    : AppColors.greyLight),
-                          ),
-                          enabledBorder: UnderlineInputBorder(
-                            borderSide: BorderSide(
-                                color: isDark
-                                    ? colorScheme.outline
-                                    : AppColors.greyLight),
-                          ),
-                          focusedBorder: UnderlineInputBorder(
-                            borderSide:
-                                BorderSide(color: colorScheme.primary),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Content Field
-                      TextField(
-                        controller: _contentController,
-                        maxLines: null,
-                        minLines: 8,
-                        style: AppTextStyles.bodyMedium(context)
-                            .copyWith(height: 1.5),
-                        decoration: InputDecoration(
-                          hintText: AppStrings.addNewsArticle,
-                          hintStyle:
-                              AppTextStyles.bodyMedium(context).copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                        ),
-                      ),
-
-                      const SizedBox(height: 80),
-                    ],
+          body: WebConstrainedLayout(
+            maxWidth: 800,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: _pickImage,
+                  child: Container(
+                    width: double.infinity,
+                    height: 200,
+                    decoration: BoxDecoration(
+                      color: isDark ? colorScheme.surfaceContainerHighest : AppColors.greyLight.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: colorScheme.outline.withValues(alpha: 0.5)),
+                      image: _pickedImage != null
+                          ? DecorationImage(
+                              image: kIsWeb 
+                                  ? NetworkImage(_pickedImage!.path) 
+                                  : FileImage(io.File(_pickedImage!.path)) as ImageProvider, 
+                              fit: BoxFit.cover,
+                            )
+                          : (_existingImageUrl != null && _existingImageUrl!.isNotEmpty
+                              ? DecorationImage(image: NetworkImage(_existingImageUrl!), fit: BoxFit.cover)
+                              : null),
+                    ),
+                    child: _pickedImage == null && (_existingImageUrl == null || _existingImageUrl!.isEmpty)
+                        ? Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.add_photo_alternate, size: 48, color: colorScheme.onSurfaceVariant),
+                              const SizedBox(height: 12),
+                              Text('Add Cover Photo', style: AppTextStyles.bodyMedium(context)),
+                            ],
+                          )
+                        : null,
                   ),
                 ),
-
-          // Bottom Toolbar
-          bottomNavigationBar: SafeArea(
-            child: Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: AppSizes.screenPaddingH, vertical: 12),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                border: Border(
-                  top: BorderSide(
-                      color: isDark
-                          ? colorScheme.outline
-                          : AppColors.greyLight),
+                const SizedBox(height: 24),
+                AppTextField(
+                  label: AppStrings.newsTitle,
+                  controller: _titleController,
+                  hintText: 'Enter news title',
                 ),
-              ),
-              child: Row(
-                children: [
-                  _ToolIcon(
-                      icon: Icons.format_bold, colorScheme: colorScheme),
-                  _ToolIcon(
-                      icon: Icons.format_italic, colorScheme: colorScheme),
-                  _ToolIcon(
-                      icon: Icons.format_list_bulleted,
-                      colorScheme: colorScheme),
-                  _ToolIcon(
-                      icon: Icons.format_list_numbered,
-                      colorScheme: colorScheme),
-                  _ToolIcon(icon: Icons.link, colorScheme: colorScheme),
-                  const Spacer(),
-                  // Use AppButton — no inline styleFrom()
-                  AppButton(
-                    text: widget.existingNews != null
-                        ? 'Update'
-                        : AppStrings.publish,
-                    isLoading: isLoading,
-                    fullWidth: false,
-                    horizontalPadding: 24,
-                    onPressed: _submit,
+                const SizedBox(height: 16),
+                Text(AppStrings.addNewsArticle, style: AppTextStyles.bodyLarge(context)),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                    border: Border.all(color: colorScheme.outline),
                   ),
-                ],
-              ),
+                  child: TextField(
+                    controller: _contentController,
+                    maxLines: 15,
+                    minLines: 8,
+                    decoration: const InputDecoration(
+                      hintText: 'Type your news content here...',
+                      border: InputBorder.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 100),
+              ],
+            ),
+          ),
+          bottomNavigationBar: WebConstrainedLayout(
+            maxWidth: 800,
+            scrollable: false,
+            height: 80,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            child: Row(
+              children: [
+                const Icon(Icons.format_bold, size: 24),
+                const SizedBox(width: 16),
+                const Icon(Icons.format_italic, size: 24),
+                const SizedBox(width: 16),
+                const Icon(Icons.format_list_bulleted, size: 24),
+                const Spacer(),
+                AppPrimaryButton(
+                  text: widget.existingNews != null ? 'Update' : AppStrings.publish,
+                  fullWidth: false,
+                  isLoading: isLoading,
+                  onPressed: _submit,
+                ),
+              ],
             ),
           ),
         );
       },
     );
-  }
-}
-
-// ── Private helper widget for toolbar icons ──────────────────────────────────
-
-class _ToolIcon extends StatelessWidget {
-  const _ToolIcon({required this.icon, required this.colorScheme});
-
-  final IconData icon;
-  final ColorScheme colorScheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 12.0),
-      child: Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
-    );
-  }
-}
-
-// ── DashedBorderPainter ──────────────────────────────────────────────────────
-
-class DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double strokeWidth;
-  final Radius radius;
-
-  DashedBorderPainter({
-    required this.color,
-    required this.strokeWidth,
-    required this.radius,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    final rrect = RRect.fromRectAndRadius(Offset.zero & size, radius);
-    final Path path = Path()..addRRect(rrect);
-
-    const double dashWidth = 6.0;
-    const double dashSpace = 4.0;
-    for (PathMetric measurePath in path.computeMetrics()) {
-      double distance = 0.0;
-      while (distance < measurePath.length) {
-        final Path extractPath =
-            measurePath.extractPath(distance, distance + dashWidth);
-        canvas.drawPath(extractPath, paint);
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant DashedBorderPainter oldDelegate) {
-    return oldDelegate.color != color ||
-        oldDelegate.strokeWidth != strokeWidth ||
-        oldDelegate.radius != radius;
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
@@ -19,26 +20,52 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Future.delayed(const Duration(seconds: 3), () async {
+    // Restored to the original 3 second splash delay
+    const splashDuration = Duration(seconds: 3);
+
+    Future.delayed(splashDuration, () async {
+      if (!mounted) {
+        return;
+      }
+
+      final rememberMe = await PreferencesHelper.getRememberMe();
+
+      // If the user explicitly unchecked "Remember Me" in their last session, sign them out.
+      if (!rememberMe) {
+        await FirebaseAuth.instance.signOut();
+      }
+
+      // Small delay to ensure FirebaseAuth state is synchronized after a possible signOut
+      final hasSeenOnboarding = await PreferencesHelper.getHasSeenOnboarding();
+      
+      // On Web, Firebase takes a moment to restore session. 
+      // We check the first emit of authStateChanges if currentUser is null.
+      User? user = FirebaseAuth.instance.currentUser;
+      if (user == null && kIsWeb) {
+         user = await FirebaseAuth.instance.authStateChanges().first.timeout(
+           const Duration(seconds: 1), 
+           onTimeout: () => null,
+         );
+      }
+      final isLoggedIn = user != null;
+
       if (mounted) {
-        // Use PreferencesHelper — not raw SharedPreferences
-        final rememberMe = await PreferencesHelper.getRememberMe();
-
-        if (!rememberMe) {
-          await FirebaseAuth.instance.signOut();
+        // Navigation priority:
+        // 1. If NOT seen onboarding -> Onboarding
+        // 2. Else if NOT logged in -> Login
+        // 3. Else if NOT completed setup -> Select Country (Start flow)
+        // 4. Else -> Home
+        
+        String nextRoute;
+        if (!hasSeenOnboarding) {
+          nextRoute = AppRouter.onboarding;
+        } else if (!isLoggedIn) {
+          nextRoute = AppRouter.login;
+        } else {
+          nextRoute = AppRouter.home;
         }
-
-        final hasSeenOnboarding = await PreferencesHelper.getHasSeenOnboarding();
-
-        final isLoggedIn = FirebaseAuth.instance.currentUser != null;
-        if (mounted) {
-          Navigator.pushReplacementNamed(
-            context,
-            isLoggedIn
-              ? AppRouter.home
-              : (hasSeenOnboarding ? AppRouter.login : AppRouter.onboarding),
-          );
-        }
+            
+        Navigator.pushReplacementNamed(context, nextRoute);
       }
     });
   }
@@ -46,7 +73,6 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Set system UI based on current theme
     final isDark = Theme.of(context).brightness == Brightness.dark;
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

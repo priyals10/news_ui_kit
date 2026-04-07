@@ -1,6 +1,7 @@
 /// Pure domain entity — no JSON, no API details.
 /// This is what the rest of the app (BLoC, UI) works with.
 class NewsArticle {
+  final String authorId;
   final String sourceId;
   final String sourceName;
   final String author;
@@ -12,6 +13,7 @@ class NewsArticle {
   final String content;
 
   NewsArticle({
+    this.authorId = '',
     this.sourceId = '',
     this.sourceName = '',
     this.author = '',
@@ -25,6 +27,7 @@ class NewsArticle {
 
   Map<String, dynamic> toJson() {
     return {
+      'authorId': authorId,
       'sourceId': sourceId,
       'sourceName': sourceName,
       'author': author,
@@ -39,6 +42,7 @@ class NewsArticle {
 
   factory NewsArticle.fromJson(Map<String, dynamic> json) {
     return NewsArticle(
+      authorId: json['authorId'] ?? '',
       sourceId: json['sourceId'] ?? '',
       sourceName: json['sourceName'] ?? '',
       author: json['author'] ?? '',
@@ -62,5 +66,14 @@ class NewsArticle {
     if (diff.inHours < 24) return '${diff.inHours}h ago';
     if (diff.inDays < 7) return '${diff.inDays}d ago';
     return '${(diff.inDays / 7).floor()}w ago';
+  }
+
+  /// Returns the image URL wrapped in wsrv.nl proxy to bypass CORS and
+  /// fix http images on Android. Use this for display only.
+  /// imageUrl (raw) is used as the stable cache key.
+  String get proxiedImageUrl {
+    if (imageUrl.isEmpty) return '';
+    if (imageUrl.startsWith('https://wsrv.nl/')) return imageUrl; // already proxied
+    return 'https://wsrv.nl/?url=${Uri.encodeComponent(imageUrl)}';
   }
 }

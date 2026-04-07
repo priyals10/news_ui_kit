@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:news_ui_kit/features/auth/data/user_model.dart';
 
 abstract class ProfileEvent extends Equatable {
@@ -18,18 +19,18 @@ class UpdateProfile extends ProfileEvent {
   const UpdateProfile({
     required this.uid,
     required this.updatedFields,
-    this.newProfileImagePath,
+    this.newProfileImage,
     required this.currentUser,
   });
 
   final String uid;
   final Map<String, dynamic> updatedFields;
-  /// Path to newly picked local image file, or null if unchanged.
-  final String? newProfileImagePath;
+  /// Newly picked local image file, or null if unchanged.
+  final XFile? newProfileImage;
   final UserModel currentUser;
 
   @override
-  List<Object?> get props => [uid, updatedFields, newProfileImagePath];
+  List<Object?> get props => [uid, updatedFields, newProfileImage];
 }
 
 /// Triggered when the user taps "Delete" on one of their news posts.

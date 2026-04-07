@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/theme/app_theme.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:news_ui_kit/core/utils/preferences_helper.dart';
+import 'package:news_ui_kit/core/constants/app_assets.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
 import 'onboarding_page.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -25,7 +26,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-
     SystemChrome.setSystemUIOverlayStyle(AppTheme.onboardingSystemUI);
   }
 
@@ -38,21 +38,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final List<Map<String, String>> pages = [
     {
       "image": AppAssets.onboarding1,
-      "title": "Lorem Ipsum is simply dummy",
-      "desc":
-          "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "title": "Stay informed with the latest news",
+      "desc": "Get the most up-to-date information from around the world in real-time.",
     },
     {
       "image": AppAssets.onboarding2,
-      "title": "Lorem Ipsum is simply dummy",
-      "desc":
-          "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "title": "Explore topics that matter to you",
+      "desc": "Discover news from curated categories tailored to your interests.",
     },
     {
       "image": AppAssets.onboarding3,
-      "title": "Lorem Ipsum is simply dummy",
-      "desc":
-          "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
+      "title": "Save and share stories instantly",
+      "desc": "Bookmark articles for offline reading and share with your friends easily.",
     },
   ];
 
@@ -63,9 +60,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         curve: Curves.easeInOut,
       );
     } else {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('has_seen_onboarding', true);
-      if (mounted) Navigator.pushReplacementNamed(context, AppRouter.login);
+      await PreferencesHelper.setHasSeenOnboarding(true);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRouter.login);
+      }
     }
   }
 
@@ -81,51 +79,40 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      extendBodyBehindAppBar: true,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: Column(
-        children: [
-          Expanded(
-            child: PageView.builder(
-              controller: _controller,
-              itemCount: pages.length,
-              onPageChanged: (index) {
-                setState(() {
-                  currentIndex = index;
-                });
-              },
-              itemBuilder: (context, index) {
-                return OnboardingPage(
-                  image: pages[index]["image"]!,
-                  title: pages[index]["title"]!,
-                  description: pages[index]["desc"]!,
-                );
-              },
-            ),
-          ),
-
-          SafeArea(
-            top: false,
-            child: Padding(
-              padding: const EdgeInsets.only(
-                left: AppSizes.screenPaddingH,
-                right: AppSizes.screenPaddingH,
-                bottom: AppSizes.spacingM,
+      body: WebConstrainedLayout(
+        scrollable: false,
+        child: Column(
+          children: [
+            Expanded(
+              child: PageView.builder(
+                controller: _controller,
+                itemCount: pages.length,
+                onPageChanged: (index) => setState(() => currentIndex = index),
+                itemBuilder: (context, index) {
+                  return OnboardingPage(
+                    image: pages[index]["image"]!,
+                    title: pages[index]["title"]!,
+                    description: pages[index]["desc"]!,
+                  );
+                },
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(AppSizes.screenPaddingH, 0, AppSizes.screenPaddingH, AppSizes.spacingXL),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SmoothPageIndicator(
                     controller: _controller,
                     count: pages.length,
-                    effect: ExpandingDotsEffect(
+                    effect: const ExpandingDotsEffect(
                       activeDotColor: AppColors.primary,
                       dotColor: AppColors.greyBorder,
                       dotHeight: 8,
                       dotWidth: 8,
                     ),
                   ),
-
                   Row(
                     children: [
                       if (currentIndex > 0)
@@ -136,9 +123,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             style: AppTextStyles.greyButton(context),
                           ),
                         ),
-
                       const SizedBox(width: AppSizes.spacingSM),
-
                       ElevatedButton(
                         onPressed: nextPage,
                         style: ElevatedButton.styleFrom(
@@ -158,8 +143,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

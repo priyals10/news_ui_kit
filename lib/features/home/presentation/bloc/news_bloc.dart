@@ -15,6 +15,29 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
       : super(NewsInitial()) {
     on<FetchTopHeadlines>(_onFetchTopHeadlines);
     on<FetchHeadlinesByCategory>(_onFetchHeadlinesByCategory);
+    on<SelectArticle>(_onSelectArticle);
+    on<ClearSelection>(_onClearSelection);
+    on<SearchHomeNews>(_onSearchHomeNews);
+  }
+
+  void _onSearchHomeNews(SearchHomeNews event, Emitter<NewsState> emit) {
+    if (state is NewsLoaded) {
+      emit((state as NewsLoaded).copyWith(searchQuery: event.query));
+    }
+  }
+
+  void _onSelectArticle(SelectArticle event, Emitter<NewsState> emit) {
+    final currentState = state;
+    if (currentState is NewsLoaded) {
+      emit(currentState.copyWith(selectedArticle: event.article));
+    }
+  }
+
+  void _onClearSelection(ClearSelection event, Emitter<NewsState> emit) {
+    final currentState = state;
+    if (currentState is NewsLoaded) {
+      emit(currentState.copyWith(clearSelection: true));
+    }
   }
 
   /// Strips the "Exception: " prefix from error messages for clean UI display.
@@ -63,6 +86,7 @@ class NewsBloc extends Bloc<NewsEvent, NewsState> {
         selectedCategory: event.category,
         isLatestLoading: false,
       ));
+      return;
     }
 
     // Prepare UI state

@@ -12,7 +12,7 @@ import 'package:news_ui_kit/features/home/presentation/widgets/latest_article_ti
 class LatestScreen extends StatelessWidget {
   const LatestScreen({super.key});
 
-  static const List<String> _categories = [
+  static final List<String> _categories = [
     AppStrings.all,
     AppStrings.sports,
     AppStrings.politics,
@@ -26,6 +26,8 @@ class LatestScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final width = MediaQuery.of(context).size.width;
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
@@ -85,7 +87,7 @@ class LatestScreen extends StatelessWidget {
                 ),
               ),
 
-              // ── Article list ──
+              // ── Article grid/list ──
               Expanded(
                 child: state.isLatestLoading
                     ? const Center(child: CircularProgressIndicator())
@@ -96,25 +98,70 @@ class LatestScreen extends StatelessWidget {
                               style: AppTextStyles.greyText(context),
                             ),
                           )
-                        : ListView.separated(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSizes.screenPaddingH,
-                              vertical: 8,
-                            ),
-                            itemCount: state.latestArticles.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 12),
-                            itemBuilder: (context, index) {
-                              final article = state.latestArticles[index];
-                              return LatestArticleTile(
-                                article: article,
-                                onTap: () {
-                                  Navigator.pushNamed(
-                                    context,
-                                    AppRouter.articleDetail,
-                                    arguments: article,
-                                  );
-                                },
-                              );
+                        : LayoutBuilder(
+                            builder: (context, constraints) {
+                              if (width > 900) {
+                                return GridView.builder(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSizes.screenPaddingH,
+                                    vertical: 8,
+                                  ),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 3,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    mainAxisExtent: 130, // Tall enough for vertical tile
+                                  ),
+                                  itemCount: state.latestArticles.length,
+                                  itemBuilder: (context, index) {
+                                    final article = state.latestArticles[index];
+                                    return LatestArticleTile(
+                                      article: article,
+                                      onTap: () => Navigator.pushNamed(
+                                        context, AppRouter.articleDetail, arguments: article),
+                                    );
+                                  },
+                                );
+                              } else if (width > 600) {
+                                return GridView.builder(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSizes.screenPaddingH,
+                                    vertical: 8,
+                                  ),
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 2,
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    mainAxisExtent: 130,
+                                  ),
+                                  itemCount: state.latestArticles.length,
+                                  itemBuilder: (context, index) {
+                                    final article = state.latestArticles[index];
+                                    return LatestArticleTile(
+                                      article: article,
+                                      onTap: () => Navigator.pushNamed(
+                                        context, AppRouter.articleDetail, arguments: article),
+                                    );
+                                  },
+                                );
+                              } else {
+                                return ListView.separated(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSizes.screenPaddingH,
+                                    vertical: 8,
+                                  ),
+                                  itemCount: state.latestArticles.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                  itemBuilder: (context, index) {
+                                    final article = state.latestArticles[index];
+                                    return LatestArticleTile(
+                                      article: article,
+                                      onTap: () => Navigator.pushNamed(
+                                        context, AppRouter.articleDetail, arguments: article),
+                                    );
+                                  },
+                                );
+                              }
                             },
                           ),
               ),

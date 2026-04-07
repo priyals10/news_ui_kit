@@ -14,6 +14,13 @@ abstract class BookmarkEvent extends Equatable {
 
 class LoadBookmarks extends BookmarkEvent {}
 
+class SearchBookmarks extends BookmarkEvent {
+  final String query;
+  const SearchBookmarks(this.query);
+  @override
+  List<Object?> get props => [query];
+}
+
 class ToggleBookmark extends BookmarkEvent {
   final NewsArticle article;
   const ToggleBookmark(this.article);
@@ -36,31 +43,48 @@ class BookmarkState extends Equatable {
   final List<NewsArticle> bookmarks;
   final bool isLoading;
   final String? error;
+  final String filterQuery;
 
   const BookmarkState({
     this.bookmarks = const [],
     this.isLoading = false,
     this.error,
+    this.filterQuery = '',
   });
 
+  List<NewsArticle> get filteredBookmarks {
+    if (filterQuery.isEmpty) return bookmarks;
+    final q = filterQuery.toLowerCase();
+    return bookmarks.where((b) {
+      return b.title.toLowerCase().contains(q) || 
+             b.author.toLowerCase().contains(q) ||
+             (b.content.toLowerCase().contains(q));
+    }).toList();
+  }
+
   bool isBookmarked(NewsArticle article) {
-    return bookmarks.any((b) => b.url == article.url);
+    if (article.url.isNotEmpty) {
+      return bookmarks.any((b) => b.url == article.url);
+    }
+    return bookmarks.any((b) => b.title == article.title);
   }
 
   BookmarkState copyWith({
     List<NewsArticle>? bookmarks,
     bool? isLoading,
-    String? Function()? error, // Function pattern to allow passing null explicitly
+    String? Function()? error,
+    String? filterQuery,
   }) {
     return BookmarkState(
       bookmarks: bookmarks ?? this.bookmarks,
       isLoading: isLoading ?? this.isLoading,
       error: error != null ? error() : this.error,
+      filterQuery: filterQuery ?? this.filterQuery,
     );
   }
 
   @override
-  List<Object?> get props => [bookmarks, isLoading, error];
+  List<Object?> get props => [bookmarks, isLoading, error, filterQuery];
 }
 
 // ── BLoC ─────────────────────────────────────────────────────────────────────
@@ -81,11 +105,11 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
         super(const BookmarkState()) {
     
     on<LoadBookmarks>(_onLoadBookmarks);
+    on<SearchBookmarks>(_onSearchBookmarks);
     on<ToggleBookmark>(_onToggleBookmark);
     on<ClearBookmarks>(_onClearBookmarks);
     on<_OnBookmarksUpdated>(_onBookmarksUpdated);
     
-    // Auto-start listening on creation. It will pick up UID if already logged in.
     add(LoadBookmarks());
   }
 
@@ -98,7 +122,7 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
       }).listen(
         (bookmarks) => add(_OnBookmarksUpdated(bookmarks)),
         onError: (e) {
-          // You could add a specific event for stream error if needed
+          // Stream error handled
         },
       );
     } catch (e) {
@@ -106,15 +130,32 @@ class BookmarkBloc extends Bloc<BookmarkEvent, BookmarkState> {
     }
   }
 
+  void _onSearchBookmarks(SearchBookmarks event, Emitter<BookmarkState> emit) {
+    emit(state.copyWith(filterQuery: event.query));
+  }
+
   Future<void> _onToggleBookmark(ToggleBookmark event, Emitter<BookmarkState> emit) async {
-    final isCurrentlyBookmarked = state.isBookmarked(event.article);
+    final article = event.article;
+    final isCurrentlyBookmarked = state.isBookmarked(article);
+    
+    // --- Optimistic Update ---
+    final updatedBookmarks = List<NewsArticle>.from(state.bookmarks);
+    if (isCurrentlyBookmarked) {
+      updatedBookmarks.removeWhere((b) => (b.url.isNotEmpty && b.url == article.url) || (b.url.isEmpty && b.title == article.title));
+    } else {
+      updatedBookmarks.add(article);
+    }
+    emit(state.copyWith(bookmarks: updatedBookmarks));
+
     try {
       if (isCurrentlyBookmarked) {
-        await _removeBookmark(event.article);
+        await _removeBookmark(article);
       } else {
-        await _addBookmark(event.article);
+        await _addBookmark(article);
       }
     } catch (e) {
+      // Revert on error
+      add(LoadBookmarks()); 
       emit(state.copyWith(error: () => e.toString()));
     }
   }

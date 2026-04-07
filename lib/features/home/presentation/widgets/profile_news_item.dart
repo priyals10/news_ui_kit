@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
+import 'package:news_ui_kit/core/utils/image_cache_manager.dart';
 
 /// A list tile for a user's own news post on the profile screen.
 ///
@@ -42,6 +43,7 @@ class ProfileNewsItem extends StatelessWidget {
                 width: 100,
                 height: 100,
                 fit: BoxFit.cover,
+                cacheManager: CustomCacheManager.instance,
                 errorWidget: (context, url, error) => Container(
                   width: 100,
                   height: 100,

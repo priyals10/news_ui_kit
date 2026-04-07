@@ -1,11 +1,12 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
-import 'package:news_ui_kit/core/router/app_router.dart';
+import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/bookmark_bloc.dart';
-import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
+import 'package:news_ui_kit/features/home/presentation/widgets/latest_article_tile.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
+import 'package:news_ui_kit/core/router/app_router.dart';
 
 class BookmarkScreen extends StatefulWidget {
   const BookmarkScreen({super.key});
@@ -15,111 +16,75 @@ class BookmarkScreen extends StatefulWidget {
 }
 
 class _BookmarkScreenState extends State<BookmarkScreen> {
-  String _searchQuery = '';
-
-  @override
-  void initState() {
-    super.initState();
-    context.read<BookmarkBloc>().add(LoadBookmarks());
-  }
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        backgroundColor: colorScheme.surface,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        title: Text(
-          'Bookmark',
-          style: AppTextStyles.headingSmall(
-            context,
-          ).copyWith(fontSize: 32, fontWeight: FontWeight.w700),
-        ),
-        centerTitle: false,
-      ),
-      body: Column(
+    return WebConstrainedLayout(
+      scrollable: false,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Search Field
+          const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSizes.screenPaddingH,
-              vertical: 8,
-            ),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Search',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: const Icon(Icons.tune),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: colorScheme.outlineVariant),
-                ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
+            child: Text(
+              "Bookmark", 
+              style: AppTextStyles.headingLarge(context).copyWith(
+                fontSize: 32,
+                fontWeight: FontWeight.w700,
               ),
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value.toLowerCase();
-                });
-              },
             ),
           ),
-
+          const SizedBox(height: 16),
+          // Search Field
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH, vertical: 8),
+            child: TextField(
+              onChanged: (query) => context.read<BookmarkBloc>().add(SearchBookmarks(query)),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: Icon(Icons.search, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant.withValues(alpha: 0.5)),
+                fillColor: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                filled: true,
+                contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.3)),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.radiusM),
+                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                ),
+              ),
+            ),
+          ),
           Expanded(
-            child: BlocConsumer<BookmarkBloc, BookmarkState>(
-              listener: (context, state) {
-                if (state.error != null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(state.error!)),
-                  );
-                }
-              },
+            child: BlocBuilder<BookmarkBloc, BookmarkState>(
               builder: (context, state) {
                 if (state.isLoading && state.bookmarks.isEmpty) {
                   return const Center(child: CircularProgressIndicator());
                 }
 
                 if (state.error != null && state.bookmarks.isEmpty) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-                          const SizedBox(height: 16),
-                          Text(state.error!, textAlign: TextAlign.center),
-                        ],
-                      ),
-                    ),
-                  );
+                  return Center(child: Text(state.error!));
                 }
 
-                final allBookmarks = state.bookmarks;
-
-                // Filter bookmarks based on search query
-                final bookmarks =
-                    _searchQuery.isEmpty
-                        ? allBookmarks
-                        : allBookmarks.where((article) {
-                          return article.title.toLowerCase().contains(
-                                _searchQuery,
-                              ) ||
-                              article.sourceName.toLowerCase().contains(
-                                _searchQuery,
-                              );
-                        }).toList();
+                final bookmarks = state.filteredBookmarks;
 
                 if (bookmarks.isEmpty) {
                   return Center(
-                    child: Text(
-                      _searchQuery.isEmpty
-                          ? 'No bookmarks yet.'
-                          : 'No articles found.',
-                      style: TextStyle(color: colorScheme.onSurfaceVariant),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Text(
+                        state.filterQuery.isEmpty ? AppStrings.noBookmarksFound : 'No articles found for "${state.filterQuery}"',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.greyText(context),
+                      ),
                     ),
                   );
                 }
@@ -127,129 +92,17 @@ class _BookmarkScreenState extends State<BookmarkScreen> {
                 return ListView.separated(
                   padding: const EdgeInsets.all(AppSizes.screenPaddingH),
                   itemCount: bookmarks.length,
-                  separatorBuilder:
-                      (context, index) => const SizedBox(height: 16),
+                  separatorBuilder: (_, __) => const SizedBox(height: 20),
                   itemBuilder: (context, index) {
                     final article = bookmarks[index];
-                    return _buildBookmarkItem(article, colorScheme);
+                    return LatestArticleTile(
+                      article: article,
+                      onTap: () => Navigator.pushNamed(context, AppRouter.articleDetail, arguments: article),
+                    );
                   },
                 );
               },
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBookmarkItem(NewsArticle article, ColorScheme colorScheme) {
-    return InkWell(
-      onTap: () {
-        Navigator.pushNamed(
-          context,
-          AppRouter.articleDetail,
-          arguments: article,
-        );
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Row(
-        children: [
-          // Content Left
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Europe', // Placeholder for actual category if available
-                  style: TextStyle(
-                    color: colorScheme.onSurfaceVariant,
-                    fontSize: 13,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  article.title,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 10,
-                      backgroundColor: colorScheme.surfaceContainerHighest,
-                      backgroundImage:
-                          article.url.isNotEmpty
-                              ? CachedNetworkImageProvider(
-                                'https://www.google.com/s2/favicons?domain=${Uri.tryParse(article.url)?.host ?? ""}&sz=128',
-                              )
-                              : null,
-                      child:
-                          article.url.isEmpty
-                              ? const Icon(Icons.public, size: 12)
-                              : null,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      article.sourceName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.access_time, size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      article.timeAgo,
-                      style: TextStyle(
-                        color: colorScheme.onSurfaceVariant,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          // Thumbnail Right
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child:
-                article.imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                      imageUrl: article.imageUrl,
-                      width: 96,
-                      height: 96,
-                      fit: BoxFit.cover,
-                      placeholder:
-                          (context, url) => Container(
-                            width: 96,
-                            height: 96,
-                            color: colorScheme.surfaceContainerHighest,
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          ),
-                      errorWidget:
-                          (context, url, error) => Container(
-                            width: 96,
-                            height: 96,
-                            color: colorScheme.surfaceContainerHighest,
-                            child: const Icon(Icons.broken_image),
-                          ),
-                    )
-                    : Container(
-                      width: 96,
-                      height: 96,
-                      color: colorScheme.surfaceContainerHighest,
-                      child: const Icon(Icons.article),
-                    ),
           ),
         ],
       ),

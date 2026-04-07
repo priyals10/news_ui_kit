@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/features/auth/data/user_model.dart';
@@ -9,9 +8,6 @@ import 'profile_event.dart';
 import 'profile_state.dart';
 
 /// Manages all state for the Profile and Edit Profile screens.
-///
-/// Keeps repositories out of the UI layer. Screens dispatch events and
-/// react to states — they never call repository methods directly.
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final GetUserProfileUseCase _getUserProfile;
   final SaveOrUpdateProfileUseCase _saveOrUpdateProfile;
@@ -53,6 +49,8 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
           UserModel(
             uid: firebaseUser.uid,
             email: firebaseUser.email ?? '',
+            fullName: firebaseUser.displayName ?? '',
+            photoUrl: firebaseUser.photoURL ?? '',
           );
 
       // Emit user data first, then load news asynchronously to keep UI snappy
@@ -86,10 +84,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       String photoUrl = event.currentUser.photoUrl;
 
-      if (event.newProfileImagePath != null) {
+      if (event.newProfileImage != null) {
         photoUrl = await _uploadProfileImage(
           uid: event.uid,
-          imageFile: File(event.newProfileImagePath!),
+          imageFile: event.newProfileImage!,
         );
       }
 

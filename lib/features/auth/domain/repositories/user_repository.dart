@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:news_ui_kit/features/auth/data/user_model.dart';
 
 abstract class UserRepository {
@@ -7,5 +7,6 @@ abstract class UserRepository {
   Future<void> updateUserProfile(String uid, Map<String, dynamic> data);
   Future<void> saveOrUpdateProfile(String uid, Map<String, dynamic> data);
   Future<bool> profileExists(String uid);
-  Future<String> uploadProfileImage({required String uid, required File imageFile});
+  /// Updated to use [XFile] to avoid dart:io dependency on web.
+  Future<String> uploadProfileImage({required String uid, required XFile imageFile});
 }

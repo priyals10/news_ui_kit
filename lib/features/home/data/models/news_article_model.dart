@@ -33,12 +33,44 @@ class NewsArticleModel {
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       url: json['url'] ?? '',
-      imageUrl: json['urlToImage'] ?? '',
+      imageUrl: _fixImageUrl(json['urlToImage']),
       publishedAt: json['publishedAt'] != null
           ? DateTime.tryParse(json['publishedAt'])
           : null,
       content: json['content'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'source': {
+        'id': sourceId,
+        'name': sourceName,
+      },
+      'author': author,
+      'title': title,
+      'description': description,
+      'url': url,
+      // Store the raw URL (imageUrl is already raw since _fixImageUrl now returns raw)
+      'urlToImage': imageUrl,
+      'publishedAt': publishedAt?.toIso8601String(),
+      'content': content,
+    };
+  }
+
+  static String _fixImageUrl(dynamic url) {
+    if (url == null || url is! String || url.isEmpty) return '';
+    // Strip wsrv.nl wrapper if it was previously stored wrapped
+    if (url.startsWith('https://wsrv.nl/?url=')) {
+      return Uri.decodeComponent(url.replaceFirst('https://wsrv.nl/?url=', ''));
+    }
+    return url;
+  }
+
+  /// Returns the image URL wrapped in the wsrv.nl proxy for display.
+  static String proxyUrl(String rawUrl) {
+    if (rawUrl.isEmpty) return '';
+    return 'https://wsrv.nl/?url=${Uri.encodeComponent(rawUrl)}';
   }
 
   /// Converts this API model to a pure domain entity.

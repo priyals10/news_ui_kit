@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract class CreateNewsEvent extends Equatable {
   const CreateNewsEvent();
@@ -17,19 +18,19 @@ class PublishNews extends CreateNewsEvent {
   const PublishNews({
     required this.title,
     required this.content,
-    this.imageFilePath,
+    this.imageFile,
     this.existingImageUrl,
   });
 
   final String title;
   final String content;
-  /// Local file path of newly selected image, or null if not changed.
-  final String? imageFilePath;
+  /// Newly picked cross-platform image file, or null if not changed.
+  final XFile? imageFile;
   /// Existing remote URL in edit mode, or null for a new post.
   final String? existingImageUrl;
 
   @override
-  List<Object?> get props => [title, content, imageFilePath, existingImageUrl];
+  List<Object?> get props => [title, content, imageFile, existingImageUrl];
 }
 
 /// Update an existing news post.
@@ -39,7 +40,7 @@ class UpdateNews extends CreateNewsEvent {
     required this.title,
     required this.content,
     required this.createdAt,
-    this.imageFilePath,
+    this.imageFile,
     this.existingImageUrl,
   });
 
@@ -47,11 +48,11 @@ class UpdateNews extends CreateNewsEvent {
   final String title;
   final String content;
   final DateTime createdAt;
-  final String? imageFilePath;
+  final XFile? imageFile;
   final String? existingImageUrl;
 
   @override
-  List<Object?> get props => [newsId, title, content, imageFilePath, existingImageUrl];
+  List<Object?> get props => [newsId, title, content, imageFile, existingImageUrl];
 }
 
 /// Delete an existing news post from the create/edit screen.

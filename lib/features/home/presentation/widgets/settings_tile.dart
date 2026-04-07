@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 
 /// A reusable settings list tile with icon, label, and optional chevron arrow.
-///
-/// Extracted from `SettingsScreen._buildTile()` to keep build methods lean
-/// and enable independent reuse across other settings flows.
 class SettingsTile extends StatelessWidget {
   const SettingsTile({
     super.key,
@@ -11,27 +8,31 @@ class SettingsTile extends StatelessWidget {
     required this.label,
     required this.onTap,
     this.showArrow = true,
+    this.iconColor,
+    this.labelColor,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback onTap;
   final bool showArrow;
+  final Color? iconColor;
+  final Color? labelColor;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textColor = colorScheme.onSurface;
-    final iconColor = colorScheme.onSurface;
+    final textColor = labelColor ?? colorScheme.onSurface;
+    final activeIconColor = iconColor ?? colorScheme.onSurface;
     final arrowColor = colorScheme.onSurfaceVariant;
 
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: iconColor),
+            Icon(icon, size: 22, color: activeIconColor),
             const SizedBox(width: 16),
             Expanded(
               child: Text(

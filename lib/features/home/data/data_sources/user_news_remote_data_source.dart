@@ -6,14 +6,28 @@ class UserNewsRemoteDataSource {
 
   /// Fetches news articles from Firestore
   Future<List<UserNewsModel>> getUserNews(String uid) async {
-    final snapshot = await _firestore
-        .collection('user_news')
-        .where('authorId', isEqualTo: uid)
-        .get();
-        
-    return snapshot.docs
-        .map((doc) => UserNewsModel.fromJson(doc.data()))
-        .toList();
+    try {
+      final snapshot = await _firestore
+          .collection('user_news')
+          .where('authorId', isEqualTo: uid)
+          .get();
+          
+      return snapshot.docs
+          .map((doc) => UserNewsModel.fromJson(doc.data()))
+          .toList();
+    } catch (_) {
+      try {
+        final cacheSnap = await _firestore
+            .collection('user_news')
+            .where('authorId', isEqualTo: uid)
+            .get(const GetOptions(source: Source.cache));
+            
+        return cacheSnap.docs
+            .map((doc) => UserNewsModel.fromJson(doc.data()))
+            .toList();
+      } catch (_) {}
+    }
+    return [];
   }
 
   /// Uploads a new article to Firestore

@@ -15,7 +15,7 @@ extension GetLocalHeadlineCollection on Isar {
 
 const LocalHeadlineSchema = CollectionSchema(
   name: r'LocalHeadline',
-  id: -5471022915039540415,
+  id: -5471022915039540224,
   properties: {
     r'author': PropertySchema(
       id: 0,
@@ -75,7 +75,7 @@ const LocalHeadlineSchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'url_category': IndexSchema(
-      id: 9135484080862797672,
+      id: 9135484080862797824,
       name: r'url_category',
       unique: true,
       replace: true,
@@ -93,7 +93,7 @@ const LocalHeadlineSchema = CollectionSchema(
       ],
     ),
     r'title': IndexSchema(
-      id: -7636685945352118059,
+      id: -7636685945352118272,
       name: r'title',
       unique: false,
       replace: false,

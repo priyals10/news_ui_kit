@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:news_ui_kit/core/constants/app_colors.dart';
-import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
+import 'package:news_ui_kit/core/utils/image_cache_manager.dart';
 
-/// A horizontal tile showing a latest news article.
-/// Layout: left side (square thumbnail) — right side (title, source + time).
 class LatestArticleTile extends StatelessWidget {
   final NewsArticle article;
   final VoidCallback? onTap;
@@ -18,89 +15,84 @@ class LatestArticleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return GestureDetector(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Left: thumbnail ──
+            // --- Image Thumbnail ---
             ClipRRect(
-              borderRadius: BorderRadius.circular(AppSizes.radiusM),
-              child: article.imageUrl.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: article.imageUrl,
-                      width: 96,
-                      height: 96,
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) => Container(
-                        width: 96,
-                        height: 96,
-                        color: AppColors.greyLight,
-                        child: const Icon(Icons.image, color: AppColors.greyHint),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        width: 96,
-                        height: 96,
-                        color: AppColors.greyLight,
-                        child: const Icon(Icons.broken_image, color: AppColors.greyHint),
-                      ),
-                    )
-                  : Container(
-                      width: 96,
-                      height: 96,
-                      color: AppColors.greyLight,
-                      child: const Icon(Icons.image, color: AppColors.greyHint),
-                    ),
+              borderRadius: BorderRadius.circular(12),
+              child: SizedBox(
+                width: 100,
+                height: 100,
+                child: CachedNetworkImage(
+                  imageUrl: article.proxiedImageUrl,
+                  cacheKey: article.imageUrl,
+                  fit: BoxFit.cover,
+                  cacheManager: CustomCacheManager.instance,
+                  errorWidget: (_, __, ___) => Container(
+                    color: colorScheme.surfaceContainerHighest,
+                    child: const Icon(Icons.broken_image, size: 24),
+                  ),
+                ),
+              ),
             ),
-
             const SizedBox(width: 12),
 
-            // ── Right: text content ──
+            // --- Text Content ---
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Title — max 2 lines
+                   // SOURCE (Kabar Style Badge)
+                  Text(
+                    article.sourceName.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: colorScheme.primary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+
+                  // TITLE
                   Text(
                     article.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
+                      color: colorScheme.onSurface,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
                       height: 1.3,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
-                  // Source + time
+                  // TIME
                   Row(
                     children: [
-                      Flexible(
-                        child: Text(
-                          article.sourceName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: colorScheme.onSurface.withValues(alpha: 0.7),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 6),
-                        child: Icon(Icons.circle, size: 4, color: colorScheme.onSurface.withValues(alpha: 0.7)),
-                      ),
+                      Icon(Icons.access_time, size: 14, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6)),
+                      const SizedBox(width: 4),
                       Text(
                         article.timeAgo,
                         style: TextStyle(
-                          fontSize: 13,
-                          color: AppColors.greyDark,
+                          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                          fontSize: 12,
                         ),
                       ),
                     ],

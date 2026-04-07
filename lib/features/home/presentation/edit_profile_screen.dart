@@ -1,7 +1,8 @@
-import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
@@ -13,6 +14,8 @@ import 'package:news_ui_kit/features/home/presentation/bloc/profile_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_event.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
+import 'dart:io' as io;
 
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -31,7 +34,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   late final TextEditingController _bioController;
   late final TextEditingController _websiteController;
 
-  File? _newProfileImage;
+  XFile? _newProfileImage;
 
   String? usernameError;
   String? fullNameError;
@@ -144,7 +147,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           UpdateProfile(
             uid: firebaseUser.uid,
             currentUser: widget.user,
-            newProfileImagePath: _newProfileImage?.path,
+            newProfileImage: _newProfileImage,
             updatedFields: {
               'uid': firebaseUser.uid,
               'username': _usernameController.text.trim(),
@@ -203,7 +206,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       ),
               ],
             ),
-            body: SingleChildScrollView(
+            body: WebConstrainedLayout(
               padding: EdgeInsets.only(
                 left: AppSizes.screenPaddingH,
                 right: AppSizes.screenPaddingH,
@@ -222,7 +225,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           radius: AppSizes.avatarRadius,
                           backgroundColor: AppColors.greyLight,
                           backgroundImage: _newProfileImage != null
-                              ? FileImage(_newProfileImage!)
+                              ? (kIsWeb 
+                                  ? NetworkImage(_newProfileImage!.path) 
+                                  : FileImage(io.File(_newProfileImage!.path)) as ImageProvider)
                               : (widget.user.photoUrl.isNotEmpty
                                       ? CachedNetworkImageProvider(
                                           widget.user.photoUrl)
@@ -301,5 +306,3 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 }
-
-

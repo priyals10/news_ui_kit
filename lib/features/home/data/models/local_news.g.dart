@@ -15,7 +15,7 @@ extension GetLocalNewsCollection on Isar {
 
 const LocalNewsSchema = CollectionSchema(
   name: r'LocalNews',
-  id: -1234561720414593979,
+  id: -1234561720414594048,
   properties: {
     r'authorId': PropertySchema(
       id: 0,
@@ -70,7 +70,7 @@ const LocalNewsSchema = CollectionSchema(
   idName: r'id',
   indexes: {
     r'firestoreId': IndexSchema(
-      id: 1863077355534729001,
+      id: 1863077355534728960,
       name: r'firestoreId',
       unique: true,
       replace: true,
@@ -83,7 +83,7 @@ const LocalNewsSchema = CollectionSchema(
       ],
     ),
     r'title': IndexSchema(
-      id: -7636685945352118059,
+      id: -7636685945352118272,
       name: r'title',
       unique: false,
       replace: false,

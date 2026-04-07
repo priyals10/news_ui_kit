@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
 
 class ExploreScreen extends StatelessWidget {
   const ExploreScreen({super.key});
@@ -15,10 +16,13 @@ class ExploreScreen extends StatelessWidget {
         title: Text('Explore', style: AppTextStyles.headingSmall(context)),
         centerTitle: false,
       ),
-      body: Center(
-        child: Text(
-          'Explore — coming soon',
-          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      body: WebConstrainedLayout(
+        scrollable: false,
+        child: Center(
+          child: Text(
+            'Explore — coming soon',
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+          ),
         ),
       ),
     );

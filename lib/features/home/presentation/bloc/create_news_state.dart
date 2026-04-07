@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:image_picker/image_picker.dart';
 
 abstract class CreateNewsState extends Equatable {
   const CreateNewsState();
@@ -11,14 +12,14 @@ class CreateNewsInitial extends CreateNewsState {
   const CreateNewsInitial();
 }
 
-/// Image was picked from gallery — holds the local file path.
+/// Image was picked from gallery — holds the local XFile.
 class CoverImagePicked extends CreateNewsState {
-  const CoverImagePicked({required this.imagePath});
+  const CoverImagePicked({required this.imageFile});
 
-  final String imagePath;
+  final XFile imageFile;
 
   @override
-  List<Object?> get props => [imagePath];
+  List<Object?> get props => [imageFile];
 }
 
 class CreateNewsLoading extends CreateNewsState {

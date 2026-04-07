@@ -5,13 +5,10 @@ import 'package:news_ui_kit/core/utils/media_picker_helper.dart';
 import 'package:news_ui_kit/features/home/domain/repositories/user_news_repository.dart';
 import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
 import 'package:news_ui_kit/features/auth/domain/use_cases/user_use_cases.dart';
-import 'package:image_picker/image_picker.dart';
 import 'create_news_event.dart';
 import 'create_news_state.dart';
 
 /// Manages all logic for creating or editing a news post.
-///
-/// API calls (Cloudinary upload, Firestore save) live here — not in the UI.
 class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
   final GetUserProfileUseCase _getUserProfile;
   final CreateUserNewsUseCase _createUserNews;
@@ -42,7 +39,7 @@ class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
   ) async {
     final file = await MediaPickerHelper.pickFromGallery();
     if (file != null) {
-      emit(CoverImagePicked(imagePath: file.path));
+      emit(CoverImagePicked(imageFile: file));
     }
   }
 
@@ -66,12 +63,11 @@ class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
       final authorImage = userProfile?.photoUrl ?? '';
 
       String? coverImageUrl = event.existingImageUrl;
-      if (event.imageFilePath != null) {
-        coverImageUrl = await CloudinaryService.uploadImage(
-          XFile(event.imageFilePath!),
-        );
+      if (event.imageFile != null) {
+        // Correctly passing XFile to Cloudinary service
+        coverImageUrl = await CloudinaryService.uploadImage(event.imageFile!);
         if (coverImageUrl == null) {
-          throw Exception('Failed to upload image.');
+          throw Exception('Failed to upload image to Cloudinary.');
         }
       }
 
@@ -114,10 +110,8 @@ class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
       final authorImage = userProfile?.photoUrl ?? '';
 
       String? coverImageUrl = event.existingImageUrl;
-      if (event.imageFilePath != null) {
-        coverImageUrl = await CloudinaryService.uploadImage(
-          XFile(event.imageFilePath!),
-        );
+      if (event.imageFile != null) {
+        coverImageUrl = await CloudinaryService.uploadImage(event.imageFile!);
         if (coverImageUrl == null) {
           throw Exception('Failed to upload new image.');
         }

@@ -1,12 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
+import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/auth/domain/repositories/user_repository.dart';
 import 'auth_result.dart';
 
 class SignupUseCase {
-  final AuthRepository _repository;
+  final AuthRepository _authRepository;
+  final UserRepository _userRepository;
 
-  SignupUseCase(this._repository);
+  SignupUseCase(this._authRepository, this._userRepository);
 
   Future<AuthResult> call({
     required String email,
@@ -33,13 +36,28 @@ class SignupUseCase {
 
     if (errors.isNotEmpty) return AuthResult.failure(errors);
 
-    // ── Firebase call (NEW) ──
+    // ── Firebase call ──
     try {
-      await _repository.signUp(email: email, password: password);
+      final user = await _authRepository.signUp(email: email, password: password);
+      
+      if (user != null) {
+        // Create initial user profile in Firestore
+        final userModel = UserModel(
+          uid: user.uid,
+          email: user.email ?? email,
+          username: email.split('@')[0],
+          fullName: email.split('@')[0].toUpperCase(),
+        );
+        
+        await _userRepository.saveUserProfile(userModel);
+      }
+      
       return AuthResult.success();
     } on FirebaseAuthException catch (e) {
       final message = _mapFirebaseError(e.code);
       return AuthResult.failure({'email': message});
+    } catch (e) {
+      return AuthResult.failure({'email': 'An unexpected error occurred during signup.'});
     }
   }
 
