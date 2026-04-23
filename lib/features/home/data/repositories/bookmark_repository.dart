@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:news_ui_kit/features/home/data/models/news_article_model.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 import 'package:news_ui_kit/features/home/domain/repositories/bookmark_repository.dart' as domain;
 
@@ -26,7 +27,7 @@ class BookmarkRepository implements domain.BookmarkRepository {
     if (uid == null) return;
 
     final docId = "${uid}_${_getArticleId(article)}";
-    final data = article.toJson();
+    final data = NewsArticleModel.fromEntity(article).toJson();
     data['userId'] = uid;
 
     await _firestore
@@ -72,7 +73,7 @@ class BookmarkRepository implements domain.BookmarkRepository {
         .get();
 
     return snapshot.docs
-        .map((doc) => NewsArticle.fromJson(doc.data()))
+        .map((doc) => NewsArticleModel.fromJson(doc.data()).toEntity())
         .toList();
   }
 
@@ -87,7 +88,7 @@ class BookmarkRepository implements domain.BookmarkRepository {
           .where('userId', isEqualTo: user.uid)
           .snapshots()
           .map((snapshot) => snapshot.docs
-              .map((doc) => NewsArticle.fromJson(doc.data()))
+              .map((doc) => NewsArticleModel.fromJson(doc.data()).toEntity())
               .toList());
     });
   }

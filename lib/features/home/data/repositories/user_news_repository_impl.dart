@@ -1,31 +1,34 @@
 import 'package:news_ui_kit/core/network_info.dart';
-import 'package:news_ui_kit/features/home/data/data_sources/user_news_local_data_source.dart';
-import 'package:news_ui_kit/features/home/data/data_sources/user_news_remote_data_source.dart';
-import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
-import 'package:news_ui_kit/features/home/domain/repositories/user_news_repository.dart' as domain;
+import '../../domain/entities/user_news.dart';
+import '../../domain/repositories/user_news_repository.dart' as domain;
+import '../data_sources/user_news_local_data_source.dart';
+import '../data_sources/user_news_remote_data_source.dart';
+import '../models/user_news_model.dart';
 
-class UserNewsRepository implements domain.UserNewsRepository {
+class UserNewsRepositoryImpl implements domain.UserNewsRepository {
   final UserNewsLocalDataSource localDataSource;
   final UserNewsRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;
 
-  UserNewsRepository({
+  UserNewsRepositoryImpl({
     required this.localDataSource,
     required this.remoteDataSource,
     required this.networkInfo,
   });
 
   @override
-  Future<void> createUserNews(UserNewsModel news) async {
+  Future<void> createUserNews(UserNews news) async {
+    final model = UserNewsModel.fromEntity(news);
+    
     // 1. Save to Local DB first (Optimistic UI)
-    await localDataSource.saveUserNews(news.toLocal(isSynced: false));
+    await localDataSource.saveUserNews(model.toLocal(isSynced: false));
 
     // 2. Sync to Firestore if online
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.createUserNews(news);
+        await remoteDataSource.createUserNews(model);
         // Mark as synced if successful
-        await localDataSource.saveUserNews(news.toLocal(isSynced: true));
+        await localDataSource.saveUserNews(model.toLocal(isSynced: true));
       } catch (_) {
         // If it fails, stays isSynced = false for later retry
       }
@@ -33,12 +36,13 @@ class UserNewsRepository implements domain.UserNewsRepository {
   }
 
   @override
-  Future<void> updateUserNews(UserNewsModel news) async {
-    await localDataSource.saveUserNews(news.toLocal(isSynced: false));
+  Future<void> updateUserNews(UserNews news) async {
+    final model = UserNewsModel.fromEntity(news);
+    await localDataSource.saveUserNews(model.toLocal(isSynced: false));
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.updateUserNews(news);
-        await localDataSource.saveUserNews(news.toLocal(isSynced: true));
+        await remoteDataSource.updateUserNews(model);
+        await localDataSource.saveUserNews(model.toLocal(isSynced: true));
       } catch (_) {}
     }
   }
@@ -54,7 +58,7 @@ class UserNewsRepository implements domain.UserNewsRepository {
   }
 
   @override
-  Future<List<UserNewsModel>> getUserNews(String uid) async {
+  Future<List<UserNews>> getUserNews(String uid) async {
     // Return disk data first
     final localList = await localDataSource.getUserNews(uid);
     
@@ -63,18 +67,18 @@ class UserNewsRepository implements domain.UserNewsRepository {
       try {
         final remoteData = await remoteDataSource.getUserNews(uid);
         await localDataSource.cacheUserNews(remoteData.map((e) => e.toLocal()).toList());
-        return remoteData;
+        return remoteData; // These are UserNewsModel which extends UserNews
       } catch (_) {}
     }
     
-    return localList.map((e) => e.toModel()).toList();
+    return localList.map((e) => e.toModel()).toList(); // toModel returns UserNewsModel
   }
 
   @override
-  Stream<List<UserNewsModel>> getUserNewsStream(String uid) async* {
+  Stream<List<UserNews>> getUserNewsStream(String uid) async* {
     // 1. Yield local data first
     yield* localDataSource.watchUserNews(uid).map(
-      (list) => list.map((e) => e.toModel()).toList(),
+      (list) => list.map((e) => e.toModel() as UserNews).toList(),
     );
 
     // 2. Refresh from remote in the background

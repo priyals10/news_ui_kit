@@ -1,24 +1,16 @@
-import 'package:news_ui_kit/features/home/data/models/local_news.dart';
+import '../../domain/entities/user_news.dart';
+import 'local_news.dart';
 
-class UserNewsModel {
-  final String id;
-  final String authorId;
-  final String authorName;
-  final String authorImage;
-  final String title;
-  final String content;
-  final String coverImageUrl;
-  final DateTime createdAt;
-
+class UserNewsModel extends UserNews {
   UserNewsModel({
-    required this.id,
-    required this.authorId,
-    required this.authorName,
-    required this.authorImage,
-    required this.title,
-    required this.content,
-    required this.coverImageUrl,
-    required this.createdAt,
+    required super.id,
+    required super.authorId,
+    required super.authorName,
+    required super.authorImage,
+    required super.title,
+    required super.content,
+    required super.coverImageUrl,
+    required super.createdAt,
   });
 
   Map<String, dynamic> toJson() {
@@ -48,14 +40,18 @@ class UserNewsModel {
           : DateTime.now(),
     );
   }
-  
-  String get timeAgo {
-    final diff = DateTime.now().difference(createdAt);
-    if (diff.inMinutes < 1) return 'just now';
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${(diff.inDays / 7).floor()}w ago';
+
+  factory UserNewsModel.fromEntity(UserNews news) {
+    return UserNewsModel(
+      id: news.id,
+      authorId: news.authorId,
+      authorName: news.authorName,
+      authorImage: news.authorImage,
+      title: news.title,
+      content: news.content,
+      coverImageUrl: news.coverImageUrl,
+      createdAt: news.createdAt,
+    );
   }
 
   LocalNews toLocal({bool isSynced = true}) {

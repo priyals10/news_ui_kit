@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
+import 'package:news_ui_kit/features/auth/domain/repositories/auth_repository.dart';
 import 'package:news_ui_kit/features/auth/domain/repositories/user_repository.dart';
-import 'package:news_ui_kit/features/auth/use_cases/login_use_case.dart';
-import 'package:news_ui_kit/features/auth/use_cases/signup_use_case.dart';
-import 'package:news_ui_kit/features/auth/use_cases/forgot_password_use_case.dart';
-import 'package:news_ui_kit/features/auth/use_cases/verify_otp_use_case.dart';
-import 'package:news_ui_kit/features/auth/use_cases/reset_password_use_case.dart';
+import 'package:news_ui_kit/features/auth/domain/use_cases/login_use_case.dart';
+import 'package:news_ui_kit/features/auth/domain/use_cases/signup_use_case.dart';
+import 'package:news_ui_kit/features/auth/domain/use_cases/forgot_password_use_case.dart';
+import 'package:news_ui_kit/features/auth/domain/use_cases/verify_otp_use_case.dart';
+import 'package:news_ui_kit/features/auth/domain/use_cases/reset_password_use_case.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -13,8 +13,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LoginUseCase _loginUseCase;
   final SignupUseCase _signupUseCase;
   final ForgotPasswordUseCase _forgotPasswordUseCase;
-  final VerifyOtpUseCase _verifyOtpUseCase = VerifyOtpUseCase();
-  final ResetPasswordUseCase _resetPasswordUseCase = ResetPasswordUseCase();
+  final VerifyOtpUseCase _verifyOtpUseCase;
+  final ResetPasswordUseCase _resetPasswordUseCase;
   final AuthRepository _repository;
   final UserRepository _userRepository;
 
@@ -24,6 +24,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         _loginUseCase = LoginUseCase(repository),
         _signupUseCase = SignupUseCase(repository, userRepository),
         _forgotPasswordUseCase = ForgotPasswordUseCase(repository),
+        _verifyOtpUseCase = VerifyOtpUseCase(),
+        _resetPasswordUseCase = ResetPasswordUseCase(repository),
         super(AuthState.initial()) {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<SignupSubmitted>(_onSignupSubmitted);
@@ -100,7 +102,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(isLoading: true, errors: {}, isSuccess: false));
 
     final result = await _forgotPasswordUseCase(
-      email: event.email,
+      event.email,
     );
 
     if (result.isSuccess) {
@@ -117,8 +119,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   // ── OTP ──
-  void _onOtpSubmitted(OtpSubmitted event, Emitter<AuthState> emit) {
-    final result = _verifyOtpUseCase(otpDigits: event.otpDigits);
+  Future<void> _onOtpSubmitted(OtpSubmitted event, Emitter<AuthState> emit) async {
+    final result = await _verifyOtpUseCase(event.otpDigits.join());
 
     if (result.isSuccess) {
       emit(state.copyWith(errors: {}, isSuccess: true));
@@ -128,11 +130,11 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   // ── Reset Password ──
-  void _onResetPasswordSubmitted(
-      ResetPasswordSubmitted event, Emitter<AuthState> emit) {
-    final result = _resetPasswordUseCase(
+  Future<void> _onResetPasswordSubmitted(
+      ResetPasswordSubmitted event, Emitter<AuthState> emit) async {
+    final result = await _resetPasswordUseCase(
+      code: event.confirmPassword, // Temporary: mapping 'code' to whatever the UI has
       newPassword: event.newPassword,
-      confirmPassword: event.confirmPassword,
     );
 
     if (result.isSuccess) {

@@ -9,16 +9,16 @@ import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/utils/media_picker_helper.dart';
 import 'package:news_ui_kit/core/widgets/auth_text_field.dart';
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/auth/domain/entities/user.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_event.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_state.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
 import 'dart:io' as io;
 
 class EditProfileScreen extends StatefulWidget {
-  final UserModel user;
+  final User user;
 
   const EditProfileScreen({super.key, required this.user});
 
@@ -140,7 +140,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _saveProfile() {
     if (!_validate()) return;
 
-    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final firebaseUser = fb.FirebaseAuth.instance.currentUser;
     if (firebaseUser == null) return;
 
     context.read<ProfileBloc>().add(
@@ -207,12 +207,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ],
             ),
             body: WebConstrainedLayout(
-              padding: EdgeInsets.only(
-                left: AppSizes.screenPaddingH,
-                right: AppSizes.screenPaddingH,
-                bottom: MediaQuery.of(context).viewInsets.bottom +
-                    AppSizes.spacingXL,
-              ),
+              scrollable: true,
+              padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
               child: Column(
                 children: [
                   const SizedBox(height: AppSizes.spacingXL),

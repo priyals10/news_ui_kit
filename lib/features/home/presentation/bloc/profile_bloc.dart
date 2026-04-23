@@ -1,7 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
-import 'package:news_ui_kit/features/home/domain/repositories/user_news_repository.dart';
+import 'package:news_ui_kit/features/auth/domain/entities/user.dart';
+import 'package:news_ui_kit/features/home/domain/entities/user_news.dart';
+import 'package:news_ui_kit/features/home/domain/use_cases/user_news_use_cases.dart';
 import 'package:news_ui_kit/features/auth/domain/use_cases/user_use_cases.dart';
 
 import 'profile_event.dart';
@@ -38,7 +39,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     LoadProfile event,
     Emitter<ProfileState> emit,
   ) async {
-    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final firebaseUser = fb.FirebaseAuth.instance.currentUser;
     if (firebaseUser == null) return;
 
     emit(const ProfileLoading());
@@ -46,17 +47,18 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     try {
       final user = await _getUserProfile(firebaseUser.uid);
       final resolvedUser = user ??
-          UserModel(
+          User(
             uid: firebaseUser.uid,
             email: firebaseUser.email ?? '',
             fullName: firebaseUser.displayName ?? '',
             photoUrl: firebaseUser.photoURL ?? '',
+            createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
           );
 
       // Emit user data first, then load news asynchronously to keep UI snappy
       emit(ProfileLoaded(user: resolvedUser, userNews: const [], isNewsLoading: true));
 
-      final news = await _getUserNews(firebaseUser.uid);
+      final List<UserNews> news = await _getUserNews(firebaseUser.uid);
 
       if (state is ProfileLoaded) {
         emit((state as ProfileLoaded).copyWith(
@@ -65,9 +67,10 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
         ));
       }
     } catch (_) {
-      final fallback = UserModel(
+      final fallback = User(
         uid: firebaseUser.uid,
         email: firebaseUser.email ?? '',
+        createdAt: firebaseUser.metadata.creationTime ?? DateTime.now(),
       );
       emit(ProfileLoaded(user: fallback, userNews: const [], isNewsLoading: false));
     }
@@ -87,7 +90,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
       if (event.newProfileImage != null) {
         photoUrl = await _uploadProfileImage(
           uid: event.uid,
-          imageFile: event.newProfileImage!,
+          imagePath: event.newProfileImage!.path,
         );
       }
 

@@ -1,8 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
-import 'package:news_ui_kit/features/auth/data/auth_repository.dart';
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
-import 'package:news_ui_kit/features/auth/domain/repositories/user_repository.dart';
+import '../entities/user.dart';
+import '../repositories/auth_repository.dart';
+import '../repositories/user_repository.dart';
 import 'auth_result.dart';
 
 class SignupUseCase {
@@ -36,28 +35,29 @@ class SignupUseCase {
 
     if (errors.isNotEmpty) return AuthResult.failure(errors);
 
-    // ── Firebase call ──
+    // ── Repository call (Abstract) ──
     try {
       final user = await _authRepository.signUp(email: email, password: password);
       
       if (user != null) {
         // Create initial user profile in Firestore
-        final userModel = UserModel(
+        // Note: We use the User entity here, not the Model.
+        final newUser = User(
           uid: user.uid,
-          email: user.email ?? email,
+          email: user.email,
           username: email.split('@')[0],
           fullName: email.split('@')[0].toUpperCase(),
+          createdAt: DateTime.now(),
         );
         
-        await _userRepository.saveUserProfile(userModel);
+        await _userRepository.saveUserProfile(newUser);
       }
       
       return AuthResult.success();
-    } on FirebaseAuthException catch (e) {
-      final message = _mapFirebaseError(e.code);
-      return AuthResult.failure({'email': message});
     } catch (e) {
-      return AuthResult.failure({'email': 'An unexpected error occurred during signup.'});
+      // In a real app, we might map specific repo errors to strings here.
+      // For now, we return a generic failure message.
+      return AuthResult.failure({'email': e.toString()});
     }
   }
 
@@ -73,20 +73,5 @@ class SignupUseCase {
       return AppStrings.passwordSpecialChar;
     }
     return null;
-  }
-
-  String _mapFirebaseError(String code) {
-    switch (code) {
-      case 'email-already-in-use':
-        return 'An account already exists with this email.';
-      case 'invalid-email':
-        return 'Invalid email address.';
-      case 'weak-password':
-        return 'Password is too weak.';
-      case 'operation-not-allowed':
-        return 'Email/password sign-up is not enabled.';
-      default:
-        return 'Sign up failed. Please try again.';
-    }
   }
 }

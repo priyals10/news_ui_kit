@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
-import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
+import 'package:news_ui_kit/features/home/domain/entities/user_news.dart';
 import 'package:news_ui_kit/core/utils/image_cache_manager.dart';
 
 /// A list tile for a user's own news post on the profile screen.
@@ -17,7 +17,7 @@ class ProfileNewsItem extends StatelessWidget {
     required this.onDelete,
   });
 
-  final UserNewsModel news;
+  final UserNews news;
   final VoidCallback onTap;
   final VoidCallback onEdit;
   final VoidCallback onDelete;

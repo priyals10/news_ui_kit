@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:news_ui_kit/features/home/data/models/news_article_model.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Handles all raw HTTP calls to NewsAPI.
 /// Returns data-layer models (not entities).
 class NewsRemoteDataSource {
-  static const String _apiKey = 'e8d8d64d78fc48dfbdb7e746c39b0f14';
+  static final String _apiKey = dotenv.get('NEWS_API_KEY', fallback: '');
   static const String _baseUrl = 'https://newsapi.org/v2';
 
   static const String _noInternetMessage =

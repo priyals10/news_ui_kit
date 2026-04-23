@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class CloudinaryService {
 
-  static const String cloudName = 'dyf2p0gaf';
-  static const String uploadPreset = 'news_ui_kit';
+  static final String cloudName = dotenv.get('CLOUDINARY_CLOUD_NAME', fallback: '');
+  static final String uploadPreset = dotenv.get('CLOUDINARY_UPLOAD_PRESET', fallback: '');
 
   static Future<String?> uploadImage(XFile imageFile) async {
     // Return a dummy image immediately if credentials haven't been provided yet.

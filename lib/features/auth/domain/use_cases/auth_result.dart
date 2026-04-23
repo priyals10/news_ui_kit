@@ -1,5 +1,3 @@
-/// Result returned by every use case.
-/// When you add an API, the same result type still works.
 class AuthResult {
   final bool isSuccess;
   final Map<String, String> errors;

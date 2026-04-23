@@ -1,5 +1,5 @@
 import 'package:news_ui_kit/core/utils/preferences_helper.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -9,7 +9,7 @@ import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/widgets/app_ui_kit.dart';
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/auth/domain/entities/user.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_event.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_state.dart';
@@ -112,12 +112,12 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
     });
 
     if (emailError == null && phoneError == null) {
-      final firebaseUser = FirebaseAuth.instance.currentUser;
+      final firebaseUser = fb.FirebaseAuth.instance.currentUser;
       if (firebaseUser == null) return;
 
       final country = ModalRoute.of(context)?.settings.arguments as String? ?? '';
 
-      final userModel = UserModel(
+      final user = User(
         uid: firebaseUser.uid,
         username: usernameController.text.trim(),
         fullName: fullNameController.text.trim(),
@@ -125,12 +125,23 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
         phone: phoneController.text.trim(),
         country: country,
         photoUrl: '', // Will be updated by BLoC
+        createdAt: DateTime.now(),
       );
+
+      final updatedFields = {
+        'uid': user.uid,
+        'username': user.username,
+        'fullName': user.fullName,
+        'email': user.email,
+        'phone': user.phone,
+        'country': user.country,
+        'photoUrl': user.photoUrl,
+      };
 
       context.read<ProfileBloc>().add(UpdateProfile(
             uid: firebaseUser.uid,
-            currentUser: userModel,
-            updatedFields: userModel.toMap(),
+            currentUser: user,
+            updatedFields: updatedFields,
             newProfileImage: _profileImage,
           ));
     }
@@ -346,12 +357,12 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
   }
 
   void _submitWithoutImage() {
-    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final firebaseUser = fb.FirebaseAuth.instance.currentUser;
     if (firebaseUser == null) return;
 
     final country = ModalRoute.of(context)?.settings.arguments as String? ?? '';
 
-    final userModel = UserModel(
+    final user = User(
       uid: firebaseUser.uid,
       username: usernameController.text.trim(),
       fullName: fullNameController.text.trim(),
@@ -359,12 +370,23 @@ class _FillProfileScreenState extends State<FillProfileScreen> {
       phone: phoneController.text.trim(),
       country: country,
       photoUrl: '',
+      createdAt: DateTime.now(),
     );
+
+    final updatedFields = {
+      'uid': user.uid,
+      'username': user.username,
+      'fullName': user.fullName,
+      'email': user.email,
+      'phone': user.phone,
+      'country': user.country,
+      'photoUrl': user.photoUrl,
+    };
 
     context.read<ProfileBloc>().add(UpdateProfile(
           uid: firebaseUser.uid,
-          currentUser: userModel,
-          updatedFields: userModel.toMap(),
+          currentUser: user,
+          updatedFields: updatedFields,
           newProfileImage: null,
         ));
   }

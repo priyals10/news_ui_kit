@@ -1,29 +1,19 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../domain/entities/user.dart';
 
-class UserModel {
-  final String uid;
-  final String username;
-  final String fullName;
-  final String email;
-  final String phone;
-  final String country;
-  final String photoUrl;
-  final String bio;
-  final String website;
-  final DateTime createdAt;
-
+class UserModel extends User {
   UserModel({
-    required this.uid,
-    this.username = '',
-    this.fullName = '',
-    required this.email,
-    this.phone = '',
-    this.country = '',
-    this.photoUrl = '',
-    this.bio = '',
-    this.website = '',
-    DateTime? createdAt,
-  }) : createdAt = createdAt ?? DateTime.now();
+    required super.uid,
+    super.username = '',
+    super.fullName = '',
+    required super.email,
+    super.phone = '',
+    super.country = '',
+    super.photoUrl = '',
+    super.bio = '',
+    super.website = '',
+    required super.createdAt,
+  });
 
   Map<String, dynamic> toMap() {
     return {
@@ -54,4 +44,8 @@ class UserModel {
       createdAt: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
+
+  /// Optional: A helper to convert this model explicitly to the entity type
+  /// (Though since it extends User, it usually isn't strictly needed)
+  User toEntity() => this;
 }

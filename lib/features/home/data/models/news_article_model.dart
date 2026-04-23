@@ -3,6 +3,7 @@ import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
 /// Data-layer model that knows how to parse NewsAPI JSON.
 /// Converts to the pure [NewsArticle] entity via [toEntity()].
 class NewsArticleModel {
+  final String authorId;
   final String sourceId;
   final String sourceName;
   final String author;
@@ -14,6 +15,7 @@ class NewsArticleModel {
   final String content;
 
   NewsArticleModel({
+    this.authorId = '',
     this.sourceId = '',
     this.sourceName = '',
     this.author = '',
@@ -25,8 +27,24 @@ class NewsArticleModel {
     this.content = '',
   });
 
+  factory NewsArticleModel.fromEntity(NewsArticle article) {
+    return NewsArticleModel(
+      authorId: article.authorId,
+      sourceId: article.sourceId,
+      sourceName: article.sourceName,
+      author: article.author,
+      title: article.title,
+      description: article.description,
+      url: article.url,
+      imageUrl: article.imageUrl,
+      publishedAt: article.publishedAt,
+      content: article.content,
+    );
+  }
+
   factory NewsArticleModel.fromJson(Map<String, dynamic> json) {
     return NewsArticleModel(
+      authorId: json['authorId'] ?? '',
       sourceId: json['source']?['id'] ?? '',
       sourceName: json['source']?['name'] ?? '',
       author: json['author'] ?? '',
@@ -43,6 +61,7 @@ class NewsArticleModel {
 
   Map<String, dynamic> toJson() {
     return {
+      'authorId': authorId,
       'source': {
         'id': sourceId,
         'name': sourceName,
@@ -76,6 +95,7 @@ class NewsArticleModel {
   /// Converts this API model to a pure domain entity.
   NewsArticle toEntity() {
     return NewsArticle(
+      authorId: authorId,
       sourceId: sourceId,
       sourceName: sourceName,
       author: author,

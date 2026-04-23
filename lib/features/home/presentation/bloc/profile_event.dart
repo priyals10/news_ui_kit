@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/auth/domain/entities/user.dart';
 
 abstract class ProfileEvent extends Equatable {
   const ProfileEvent();
@@ -27,7 +27,7 @@ class UpdateProfile extends ProfileEvent {
   final Map<String, dynamic> updatedFields;
   /// Newly picked local image file, or null if unchanged.
   final XFile? newProfileImage;
-  final UserModel currentUser;
+  final User currentUser;
 
   @override
   List<Object?> get props => [uid, updatedFields, newProfileImage];

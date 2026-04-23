@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
-import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
+import 'package:news_ui_kit/features/auth/domain/entities/user.dart';
+import 'package:news_ui_kit/features/home/domain/entities/user_news.dart';
 
 abstract class ProfileState extends Equatable {
   const ProfileState();
@@ -24,13 +24,13 @@ class ProfileLoaded extends ProfileState {
     this.isNewsLoading = false,
   });
 
-  final UserModel user;
-  final List<UserNewsModel> userNews;
+  final User user;
+  final List<UserNews> userNews;
   final bool isNewsLoading;
 
   ProfileLoaded copyWith({
-    UserModel? user,
-    List<UserNewsModel>? userNews,
+    User? user,
+    List<UserNews>? userNews,
     bool? isNewsLoading,
   }) {
     return ProfileLoaded(

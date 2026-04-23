@@ -7,10 +7,12 @@ import 'package:news_ui_kit/features/home/data/models/local_news.dart';
 import 'package:news_ui_kit/features/home/data/models/local_headline.dart';
 import 'package:flutter/foundation.dart';
 import 'package:news_ui_kit/core/theme/theme_mode_notifier.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   
   if (Firebase.apps.isEmpty) {
     await Firebase.initializeApp(

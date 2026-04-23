@@ -62,8 +62,11 @@ dependencies:
   isar_flutter_libs: ^3.1.0+1
   path_provider: ^2.1.2
   connectivity_plus: ^6.0.3
+  flutter_cache_manager: ^3.4.1
 
   # flutter_country_flags: ^0.0.1
+
+  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +96,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+     - .env
      - assets/images/
      - assets/icons/
      - assets/logos/

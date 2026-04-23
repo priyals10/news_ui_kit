@@ -25,38 +25,6 @@ class NewsArticle {
     this.content = '',
   });
 
-  Map<String, dynamic> toJson() {
-    return {
-      'authorId': authorId,
-      'sourceId': sourceId,
-      'sourceName': sourceName,
-      'author': author,
-      'title': title,
-      'description': description,
-      'url': url,
-      'imageUrl': imageUrl,
-      'publishedAt': publishedAt?.toIso8601String(),
-      'content': content,
-    };
-  }
-
-  factory NewsArticle.fromJson(Map<String, dynamic> json) {
-    return NewsArticle(
-      authorId: json['authorId'] ?? '',
-      sourceId: json['sourceId'] ?? '',
-      sourceName: json['sourceName'] ?? '',
-      author: json['author'] ?? '',
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      url: json['url'] ?? '',
-      imageUrl: json['imageUrl'] ?? '',
-      publishedAt: json['publishedAt'] != null 
-          ? DateTime.parse(json['publishedAt']) 
-          : null,
-      content: json['content'] ?? '',
-    );
-  }
-
   /// Returns a human-readable "time ago" string from publishedAt.
   String get timeAgo {
     if (publishedAt == null) return '';

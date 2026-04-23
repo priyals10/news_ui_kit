@@ -21,7 +21,7 @@ import 'package:news_ui_kit/features/home/presentation/search_screen.dart';
 import 'package:news_ui_kit/features/home/presentation/edit_profile_screen.dart';
 import 'package:news_ui_kit/features/home/presentation/settings_screen.dart';
 import 'package:news_ui_kit/features/home/domain/entities/news_article.dart';
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
+import 'package:news_ui_kit/features/auth/domain/entities/user.dart';
 import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
 import 'package:news_ui_kit/features/home/presentation/create_news_screen.dart';
 import 'package:news_ui_kit/features/auth/success/welcome_success_screen.dart';
@@ -110,7 +110,7 @@ class AppRouter {
         return _buildRoute(const SearchScreen());
 
       case editProfile:
-        final user = settings.arguments as UserModel;
+        final user = settings.arguments as User;
         return _buildRoute(EditProfileScreen(user: user));
 
       case AppRouter.settings:

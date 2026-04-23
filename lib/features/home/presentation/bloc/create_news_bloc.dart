@@ -1,9 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:news_ui_kit/core/services/cloudinary_service.dart';
 import 'package:news_ui_kit/core/utils/media_picker_helper.dart';
-import 'package:news_ui_kit/features/home/domain/repositories/user_news_repository.dart';
-import 'package:news_ui_kit/features/home/data/models/user_news_model.dart';
+import 'package:news_ui_kit/features/home/domain/entities/user_news.dart';
+import 'package:news_ui_kit/features/home/domain/use_cases/user_news_use_cases.dart';
 import 'package:news_ui_kit/features/auth/domain/use_cases/user_use_cases.dart';
 import 'create_news_event.dart';
 import 'create_news_state.dart';
@@ -52,7 +52,7 @@ class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
     emit(const CreateNewsLoading());
 
     try {
-      final currUser = FirebaseAuth.instance.currentUser;
+      final currUser = fb.FirebaseAuth.instance.currentUser;
       if (currUser == null) {
         emit(const CreateNewsFailure(message: 'Not logged in.'));
         return;
@@ -71,7 +71,7 @@ class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
         }
       }
 
-      final news = UserNewsModel(
+      final news = UserNews(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         authorId: currUser.uid,
         authorName: authorName,
@@ -99,7 +99,7 @@ class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
     emit(const CreateNewsLoading());
 
     try {
-      final currUser = FirebaseAuth.instance.currentUser;
+      final currUser = fb.FirebaseAuth.instance.currentUser;
       if (currUser == null) {
         emit(const CreateNewsFailure(message: 'Not logged in.'));
         return;
@@ -117,7 +117,7 @@ class CreateNewsBloc extends Bloc<CreateNewsEvent, CreateNewsState> {
         }
       }
 
-      final updated = UserNewsModel(
+      final updated = UserNews(
         id: event.newsId,
         authorId: currUser.uid,
         authorName: authorName,

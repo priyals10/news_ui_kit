@@ -3,31 +3,43 @@ import 'package:flutter/foundation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:http/http.dart' as http;
-import 'package:news_ui_kit/features/auth/data/user_model.dart';
-import 'package:news_ui_kit/features/auth/domain/repositories/user_repository.dart' as domain;
+import '../models/user_model.dart';
+import '../../domain/entities/user.dart';
+import '../../domain/repositories/user_repository.dart' as domain;
 
-class UserRepository implements domain.UserRepository {
+class UserRepositoryImpl implements domain.UserRepository {
   final FirebaseFirestore _firestore;
 
   // Cloudinary config
   static const String _cloudName = 'dyf2p0gaf';
   static const String _uploadPreset = 'news_ui_kit';
 
-  UserRepository({FirebaseFirestore? firestore})
+  UserRepositoryImpl({FirebaseFirestore? firestore})
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   CollectionReference<Map<String, dynamic>> get _usersCollection =>
       _firestore.collection('users');
 
-  // ── Save User Profile ──
   @override
-  Future<void> saveUserProfile(UserModel user) async {
-    await _usersCollection.doc(user.uid).set(user.toMap());
+  Future<void> saveUserProfile(User user) async {
+    // Convert to model to access toMap()
+    final model = UserModel(
+      uid: user.uid,
+      username: user.username,
+      fullName: user.fullName,
+      email: user.email,
+      phone: user.phone,
+      country: user.country,
+      photoUrl: user.photoUrl,
+      bio: user.bio,
+      website: user.website,
+      createdAt: user.createdAt,
+    );
+    await _usersCollection.doc(user.uid).set(model.toMap());
   }
 
-  // ── Get User Profile ──
   @override
-  Future<UserModel?> getUserProfile(String uid) async {
+  Future<User?> getUserProfile(String uid) async {
     try {
       final doc = await _usersCollection.doc(uid).get();
       if (doc.exists && doc.data() != null) {
@@ -44,45 +56,42 @@ class UserRepository implements domain.UserRepository {
     return null;
   }
 
-  // ── Update User Profile ──
   @override
   Future<void> updateUserProfile(String uid, Map<String, dynamic> data) async {
     await _usersCollection.doc(uid).update(data);
   }
 
-  // ── Save or Update User Profile (creates doc if missing) ──
   @override
   Future<void> saveOrUpdateProfile(String uid, Map<String, dynamic> data) async {
     await _usersCollection.doc(uid).set(data, SetOptions(merge: true));
   }
 
-  // ── Check if profile exists ──
   @override
   Future<bool> profileExists(String uid) async {
     final doc = await _usersCollection.doc(uid).get();
     return doc.exists;
   }
 
-  // ── Upload Profile Image (Cloudinary) ──
   @override
   Future<String> uploadProfileImage({
     required String uid,
-    required XFile imageFile,
+    required String imagePath,
   }) async {
     final uri = Uri.parse(
       'https://api.cloudinary.com/v1_1/$_cloudName/image/upload',
     );
+
+    // Data layer uses XFile to handle cross-platform reading
+    final imageFile = XFile(imagePath);
 
     final request = http.MultipartRequest('POST', uri)
       ..fields['upload_preset'] = _uploadPreset
       ..fields['public_id'] = 'profile_$uid';
 
     if (kIsWeb) {
-      // Use bytes instead of path on web to avoid dart:io dependency
       final bytes = await imageFile.readAsBytes();
       request.files.add(http.MultipartFile.fromBytes('file', bytes, filename: 'profile_$uid.jpg'));
     } else {
-      // Use path on mobile
       request.files.add(await http.MultipartFile.fromPath('file', imageFile.path));
     }
 

@@ -14,14 +14,14 @@ import 'package:news_ui_kit/features/home/presentation/bloc/search_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/profile_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/create_news_bloc.dart';
 import 'package:news_ui_kit/features/home/presentation/bloc/bookmark_bloc.dart';
-import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:news_ui_kit/features/auth/data/auth_repository.dart' as data_auth;
 import 'package:news_ui_kit/features/home/data/repositories/bookmark_repository.dart';
-import 'package:news_ui_kit/features/home/data/repositories/user_news_repository.dart' as data_news;
-import 'package:news_ui_kit/features/auth/data/user_repository.dart' as data_user;
+import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:news_ui_kit/features/auth/data/repositories/auth_repository_impl.dart' as data_auth;
+import 'package:news_ui_kit/features/home/data/repositories/user_news_repository_impl.dart' as data_news;
+import 'package:news_ui_kit/features/auth/data/repositories/user_repository_impl.dart' as data_user;
 import 'package:news_ui_kit/features/home/domain/use_cases/bookmark_use_cases.dart';
 import 'package:news_ui_kit/features/auth/domain/use_cases/user_use_cases.dart';
-import 'package:news_ui_kit/features/home/domain/repositories/user_news_repository.dart' as domain_news;
+import 'package:news_ui_kit/features/home/domain/use_cases/user_news_use_cases.dart' as domain_news;
 import 'package:isar/isar.dart';
 import 'package:news_ui_kit/core/network_info.dart';
 import 'package:news_ui_kit/features/home/data/data_sources/user_news_local_data_source.dart';
@@ -57,7 +57,7 @@ class App extends StatelessWidget {
     final removeBookmark = RemoveBookmarkUseCase(bookmarkRepo);
     final getBookmarksStream = GetBookmarksStreamUseCase(bookmarkRepo);
 
-    final userRepo = data_user.UserRepository();
+    final userRepo = data_user.UserRepositoryImpl();
     final getUserProfile = GetUserProfileUseCase(userRepo);
     final uploadImage = UploadProfileImageUseCase(userRepo);
     final saveOrUpdateProfile = SaveOrUpdateProfileUseCase(userRepo);
@@ -66,7 +66,7 @@ class App extends StatelessWidget {
     final userNewsLocal = UserNewsLocalDataSource(isar);
     final userNewsRemote = UserNewsRemoteDataSource();
 
-    final userNewsRepo = data_news.UserNewsRepository(
+    final userNewsRepo = data_news.UserNewsRepositoryImpl(
       localDataSource: userNewsLocal,
       remoteDataSource: userNewsRemote,
       networkInfo: networkInfo,
@@ -76,7 +76,7 @@ class App extends StatelessWidget {
     final createUserNews = domain_news.CreateUserNewsUseCase(userNewsRepo);
     final updateUserNews = domain_news.UpdateUserNewsUseCase(userNewsRepo);
 
-    final authRepo = data_auth.AuthRepository();
+    final authRepo = data_auth.AuthRepositoryImpl();
     
     return MultiBlocProvider(
       providers: [
