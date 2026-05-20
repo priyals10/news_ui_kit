@@ -1,12 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:country_picker/country_picker.dart' as picker;
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
-import 'package:news_ui_kit/core/widgets/app_button.dart';
-import 'package:news_ui_kit/core/widgets/app_search_field.dart';
+import 'package:news_ui_kit/core/widgets/app_ui_kit.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
 
 class ChooseTopicsScreen extends StatefulWidget {
   final picker.Country selectedCountry;
@@ -19,19 +19,11 @@ class ChooseTopicsScreen extends StatefulWidget {
 
 class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
   final TextEditingController searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   final List<String> topics = [
-    "National",
-    "International",
-    "Sport",
-    "Lifestyle",
-    "Business",
-    "Health",
-    "Fashion",
-    "Technology",
-    "Science",
-    "Art",
-    "Politics",
+    "National", "International", "Sport", "Lifestyle", "Business",
+    "Health", "Fashion", "Technology", "Science", "Art", "Politics",
   ];
 
   List<String> filteredTopics = [];
@@ -47,103 +39,87 @@ class _ChooseTopicsScreenState extends State<ChooseTopicsScreen> {
   void _filterTopics() {
     final query = searchController.text.toLowerCase();
     setState(() {
-      filteredTopics = topics
-          .where((topic) => topic.toLowerCase().contains(query))
-          .toList();
+      filteredTopics = topics.where((topic) => topic.toLowerCase().contains(query)).toList();
     });
   }
 
   @override
   void dispose() {
     searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldLight,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(AppStrings.chooseYourTopics, style: AppTextStyles.headingSmall(context)),
+      ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingHSmall),
+        child: WebConstrainedLayout(
+          maxWidth: 800,
+          scrollable: false,
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
           child: Column(
             children: [
               const SizedBox(height: AppSizes.spacingXL),
-
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(AppStrings.chooseYourTopics, style: AppTextStyles.headingSmall),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                ],
+              AppTextField(
+                label: AppStrings.search,
+                controller: searchController,
+                isRequired: false,
+                hintText: 'Search for topics',
               ),
-
               const SizedBox(height: AppSizes.spacingXL),
-
-              AppSearchField(controller: searchController),
-
-              const SizedBox(height: AppSizes.spacingXL),
-
               Expanded(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  child: SingleChildScrollView(
-                    child: Wrap(
-                      alignment: WrapAlignment.start,
-                      spacing: AppSizes.spacingS,
-                      runSpacing: AppSizes.spacingS,
-                      children: filteredTopics.map((topic) {
-                        final isSelected = selectedTopics.contains(topic);
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (isSelected) {
-                                selectedTopics.remove(topic);
-                              } else {
-                                selectedTopics.add(topic);
-                              }
-                            });
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 28,
-                              vertical: 15,
-                            ),
-                            decoration: BoxDecoration(
-                              color: isSelected ? AppColors.primary : AppColors.white,
-                              borderRadius: BorderRadius.circular(AppSizes.radiusS),
-                              border: Border.all(color: AppColors.primary),
-                            ),
-                            child: Text(
-                              topic,
-                              style: isSelected
-                                  ? AppTextStyles.chipTextSelected
-                                  : AppTextStyles.chipText,
-                            ),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: filteredTopics.map((topic) {
+                      final isSelected = selectedTopics.contains(topic);
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (isSelected) {
+                              selectedTopics.remove(topic);
+                            } else {
+                              selectedTopics.add(topic);
+                            }
+                          });
+                        },
+                        child: Chip(
+                          label: Text(topic),
+                          backgroundColor: isSelected ? AppColors.primary : Colors.transparent,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Theme.of(context).colorScheme.onSurface,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                           ),
-                        );
-                      }).toList(),
-                    ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side: BorderSide(color: isSelected ? AppColors.primary : Theme.of(context).colorScheme.outline),
+                          ),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
               ),
-
-              AppButton(
+              const SizedBox(height: 16),
+              AppPrimaryButton(
                 text: AppStrings.next,
-                isEnabled: selectedTopics.isNotEmpty,
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.chooseNewsSources);
+                onPressed: selectedTopics.isEmpty ? null : () {
+                  Navigator.pushNamed(context, AppRouter.chooseNewsSources, arguments: widget.selectedCountry.name);
                 },
               ),
-
               const SizedBox(height: AppSizes.spacingXL),
             ],
           ),

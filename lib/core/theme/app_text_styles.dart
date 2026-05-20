@@ -1,63 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 
+
 class AppTextStyles {
   AppTextStyles._();
 
   // Headings
-  static const TextStyle headingLarge = TextStyle(
-    fontSize: 42,
-    fontWeight: FontWeight.w900,
-    color: AppColors.textBlack,
-  );
+  static TextStyle headingLarge(BuildContext context) => TextStyle(
+        fontSize: 42,
+        fontWeight: FontWeight.w900,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle headingLargePrimary = TextStyle(
-    fontSize: 42,
-    fontWeight: FontWeight.w900,
-    color: AppColors.primary,
-  );
+  static TextStyle headingLargePrimary(BuildContext context) => TextStyle(
+        fontSize: 42,
+        fontWeight: FontWeight.w900,
+        color: Theme.of(context).colorScheme.primary,
+      );
 
-  static const TextStyle headingMedium = TextStyle(
-    fontSize: 32,
-    fontWeight: FontWeight.w900,
-    color: AppColors.textDark,
-  );
+  static TextStyle headingMedium(BuildContext context) => TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.w900,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle headingSmall = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w800,
-    color: AppColors.textBlack,
-  );
+  static TextStyle headingSmall(BuildContext context) => TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle headingOtp = TextStyle(
-    fontSize: 30,
-    fontWeight: FontWeight.w900,
-    color: AppColors.textDark,
-  );
+  static TextStyle headingOtp(BuildContext context) => TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.w900,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
   // Body text
-  static const TextStyle bodyLarge = TextStyle(
-    fontSize: 17,
-    height: 1.4,
-    color: Colors.black87,
-  );
+  static TextStyle bodyLarge(BuildContext context) => TextStyle(
+        fontSize: 17,
+        height: 1.4,
+      color: Theme.of(context).textTheme.bodyLarge?.color ?? Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle bodyMedium = TextStyle(
-    fontSize: 16,
-    color: AppColors.textDark,
-  );
+  static TextStyle bodyMedium(BuildContext context) => TextStyle(
+        fontSize: 16,
+      color: Theme.of(context).textTheme.bodyMedium?.color ?? Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle bodySmall = TextStyle(
-    fontSize: 14,
-    color: AppColors.textDark,
-  );
+  static TextStyle bodySmall(BuildContext context) => TextStyle(
+        fontSize: 14,
+      color: Theme.of(context).textTheme.bodySmall?.color ?? Theme.of(context).colorScheme.onSurface,
+      );
 
   // Button
-  static const TextStyle buttonText = TextStyle(
-    fontSize: 20,
-    fontWeight: FontWeight.w900,
-    color: AppColors.white,
-  );
+  static TextStyle buttonText(BuildContext context) => TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w900,
+        color: Theme.of(context).colorScheme.onPrimary,
+      );
 
   static const TextStyle buttonTextMedium = TextStyle(
     fontSize: 18,
@@ -66,113 +67,114 @@ class AppTextStyles {
   );
 
   // Link / interactive
-  static const TextStyle link = TextStyle(
-    color: AppColors.primary,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle link(BuildContext context) => TextStyle(
+        color: Theme.of(context).colorScheme.primary,
+        fontWeight: FontWeight.w600,
+      );
 
-  static const TextStyle linkButton = TextStyle(
-    color: AppColors.primary,
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-  );
+  static TextStyle linkButton(BuildContext context) => TextStyle(
+        color: Theme.of(context).colorScheme.primary,
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+      );
 
   // Label
-  static const TextStyle label = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    color: AppColors.textBlack,
-  );
+  static TextStyle label(BuildContext context) => TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle labelSmall = TextStyle(
-    fontSize: 14,
-    color: Colors.black87,
-  );
+  static TextStyle labelSmall(BuildContext context) => TextStyle(
+        fontSize: 14,
+      color: Theme.of(context).textTheme.bodySmall?.color ?? Theme.of(context).colorScheme.onSurface,
+      );
 
   // Grey hint text
-  static const TextStyle greyText = TextStyle(
-    color: Colors.grey,
-    fontSize: 14,
-  );
+  static TextStyle greyText(BuildContext context) => TextStyle(
+        color: Theme.of(context).hintColor,
+        fontSize: 14,
+      );
 
-  static const TextStyle greyButton = TextStyle(
-    color: Colors.grey,
-    fontSize: 16,
-  );
+  static TextStyle greyButton(BuildContext context) => TextStyle(
+        color: Theme.of(context).hintColor,
+        fontSize: 16,
+      );
 
   // Social button
-  static const TextStyle socialButton = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: AppColors.textBlack,
-  );
+  static TextStyle socialButton(BuildContext context) => TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
   // List item
-  static const TextStyle listItem = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: Colors.black87,
-  );
+  static TextStyle listItem(BuildContext context) => TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+      color: Theme.of(context).textTheme.bodyLarge?.color ?? Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle listItemSelected = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w500,
-    color: AppColors.white,
-  );
+  static TextStyle listItemSelected(BuildContext context) => TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w500,
+        color: Theme.of(context).colorScheme.onPrimary,
+      );
 
   // Topic chip
-  static const TextStyle chipText = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
-    color: AppColors.primary,
-  );
+  static TextStyle chipText(BuildContext context) => TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).colorScheme.primary,
+      );
 
-  static const TextStyle chipTextSelected = TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w700,
-    color: AppColors.white,
-  );
+  static TextStyle chipTextSelected(BuildContext context) => TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: Theme.of(context).colorScheme.onPrimary,
+      );
 
   // News source
-  static const TextStyle sourceName = TextStyle(
-    fontSize: 15,
-    fontWeight: FontWeight.w600,
-  );
+  static TextStyle sourceName(BuildContext context) => TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w600,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle followButton = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-    color: AppColors.primary,
-  );
+  static TextStyle followButton(BuildContext context) => TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Theme.of(context).colorScheme.primary,
+      );
 
-  static const TextStyle followingButton = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w600,
-    color: AppColors.white,
-  );
+  static TextStyle followingButton(BuildContext context) => TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Theme.of(context).colorScheme.onPrimary,
+      );
 
   // Onboarding
-  static const TextStyle onboardingTitle = TextStyle(
-    fontSize: 30,
-    fontWeight: FontWeight.w900,
-    color: AppColors.textBlack,
-  );
+  static TextStyle onboardingTitle(BuildContext context) => TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.w900,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
-  static const TextStyle onboardingDesc = TextStyle(
-    fontSize: 16,
-    color: AppColors.greyDark,
-  );
+  static TextStyle onboardingDesc(BuildContext context) => TextStyle(
+        fontSize: 16,
+        color: Theme.of(context).hintColor,
+      );
 
   // OTP digit input
-  static const TextStyle otpDigit = TextStyle(
-    fontSize: 22,
-    fontWeight: FontWeight.bold,
-    color: AppColors.textBlack,
-  );
+  static TextStyle otpDigit(BuildContext context) => TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.bold,
+      color: Theme.of(context).colorScheme.onSurface,
+      );
 
   // Error
-  static const TextStyle error = TextStyle(
-    color: AppColors.error,
-    fontSize: 14,
-  );
-}
+  static TextStyle error(BuildContext context) => TextStyle(
+        color: Theme.of(context).colorScheme.error,
+        fontSize: 14,
+      );
+  }

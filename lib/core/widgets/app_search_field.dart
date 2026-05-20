@@ -23,26 +23,34 @@ class AppSearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       height: height,
       decoration: BoxDecoration(
-        color: AppColors.white,
+        color: isDark ? Colors.grey[850] : AppColors.white,
         borderRadius: BorderRadius.circular(borderRadius ?? AppSizes.radiusL),
-        border: Border.all(color: borderColor ?? AppColors.greyBorder),
+        border: Border.all(color: borderColor ?? (isDark ? Colors.transparent : colorScheme.outline)),
       ),
       child: TextField(
         controller: controller,
+        style: TextStyle(color: colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: hintText,
-          hintStyle: const TextStyle(color: AppColors.greyHint),
+          hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
           border: InputBorder.none,
+          filled: false,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: AppSizes.inputPaddingH + 2,
             vertical: AppSizes.inputPaddingV,
           ),
           suffixIcon: Padding(
             padding: const EdgeInsets.all(12),
-            child: SvgPicture.asset(AppAssets.searchIcon, width: 20),
+            child: SvgPicture.asset(
+              AppAssets.searchIcon, 
+              width: 20,
+              colorFilter: ColorFilter.mode(colorScheme.onSurfaceVariant, BlendMode.srcIn),
+            ),
           ),
         ),
       ),

@@ -1,3 +1,12 @@
+/// Keys used with SharedPreferences (or any future storage backend).
+/// Using constants prevents typos and makes future migrations trivial.
+class AppPrefsKeys {
+  AppPrefsKeys._();
+
+  static const String hasSeenOnboarding = 'has_seen_onboarding';
+  static const String rememberMe = 'remember_me';
+}
+
 class AppStrings {
   AppStrings._();
 
@@ -26,6 +35,7 @@ class AppStrings {
   static const String forgotPasswordTitle = "Forgot\nPassword ?";
   static const String forgotPasswordDesc =
       "Don't worry! It happens. Please enter the\naddress associated with your account.";
+  static const String email = "Email";
   static const String emailOrMobile = "Email ID / Mobile number";
 
   // OTP
@@ -64,6 +74,38 @@ class AppStrings {
   static const String takePhoto = "Take Photo";
   static const String chooseFromGallery = "Choose from Gallery";
 
+  // Home
+  static const String trending = "Trending";
+  static const String latest = "Latest";
+  static const String seeAll = "See all";
+
+  // Categories
+  static const String all = "All";
+  static const String sports = "Sports";
+  static const String politics = "Politics";
+  static const String business = "Business";
+  static const String health = "Health";
+  static const String travel = "Travel";
+  static const String science = "Science";
+  static const String technology = "Technology";
+  static const String entertainment = "Entertainment";
+
+  // Profile
+  static const String profile = "Profile";
+  static const String editProfile = "Edit Profile";
+  static const String bio = "Bio";
+  static const String website = "Website";
+  static const String followers = "Followers";
+  static const String news = "News";
+  static const String logout = "Logout";
+
+  static const String createNews = "Create News";
+  static const String addCoverPhoto = "Add Cover Photo";
+  static const String newsTitle = "News title";
+  static const String addNewsArticle = "Add News/Article";
+  static const String publish = "Publish";
+  static const String recent = "Recent";
+
   // Buttons
   static const String next = "Next";
   static const String submit = "Submit";
@@ -88,4 +130,5 @@ class AppStrings {
   static const String phoneRequired = "Phone number is required";
   static const String invalidPhone = "Enter valid phone number";
   static const String pleaseConfirmPassword = "Please confirm your password";
+  static const String noBookmarksFound = "No bookmarks found. Save your favorite stories here!";
 }

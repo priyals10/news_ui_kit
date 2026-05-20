@@ -1,12 +1,12 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:news_ui_kit/core/constants/app_assets.dart';
 import 'package:news_ui_kit/core/constants/app_colors.dart';
 import 'package:news_ui_kit/core/constants/app_sizes.dart';
 import 'package:news_ui_kit/core/constants/app_strings.dart';
 import 'package:news_ui_kit/core/router/app_router.dart';
 import 'package:news_ui_kit/core/theme/app_text_styles.dart';
-import 'package:news_ui_kit/core/widgets/app_button.dart';
-import 'package:news_ui_kit/core/widgets/app_search_field.dart';
+import 'package:news_ui_kit/core/widgets/app_ui_kit.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
 
 class NewsSource {
   final String name;
@@ -25,6 +25,7 @@ class ChooseNewsSourceScreen extends StatefulWidget {
 
 class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
   final TextEditingController searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   final List<NewsSource> sources = [
     NewsSource(name: "CNBC", logo: AppAssets.cnbc),
@@ -50,9 +51,7 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
   void _filterSources() {
     final query = searchController.text.toLowerCase();
     setState(() {
-      filteredSources = sources
-          .where((source) => source.name.toLowerCase().contains(query))
-          .toList();
+      filteredSources = sources.where((source) => source.name.toLowerCase().contains(query)).toList();
     });
   }
 
@@ -61,137 +60,81 @@ class _ChooseNewsSourceScreenState extends State<ChooseNewsSourceScreen> {
   @override
   void dispose() {
     searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.white,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingHSmall),
-          child: Column(
-            children: [
-              const SizedBox(height: AppSizes.spacingXL),
-
-              Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back),
-                  ),
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        AppStrings.chooseYourNewsSources,
-                        style: AppTextStyles.headingSmall,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      body: WebConstrainedLayout(
+        maxWidth: 800,
+        scrollable: false,
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
+        child: Column(
+          children: [
+            const SizedBox(height: AppSizes.spacingXL),
+            Text(AppStrings.chooseYourNewsSources, style: AppTextStyles.headingSmall(context)),
+            const SizedBox(height: AppSizes.spacingXL),
+            AppTextField(
+              label: AppStrings.search,
+              controller: searchController,
+              isRequired: false,
+              hintText: 'Search for sources',
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: GridView.builder(
+                controller: _scrollController,
+                itemCount: filteredSources.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.8,
+                ),
+                itemBuilder: (context, index) {
+                  final source = filteredSources[index];
+                  return Column(
+                    children: [
+                      ClipOval(
+                        child: Image.asset(source.logo, width: 60, height: 60, fit: BoxFit.cover),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 24),
-                ],
-              ),
-
-              const SizedBox(height: AppSizes.spacingXL),
-
-              AppSearchField(
-                controller: searchController,
-                borderColor: AppColors.primary,
-                borderRadius: AppSizes.radiusXL,
-                height: 55,
-              ),
-
-              const SizedBox(height: 25),
-
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.only(bottom: AppSizes.spacingXL),
-                  itemCount: filteredSources.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: AppSizes.spacingL,
-                    mainAxisSpacing: AppSizes.spacingXL,
-                    mainAxisExtent: 210,
-                  ),
-                  itemBuilder: (context, index) {
-                    final source = filteredSources[index];
-
-                    return Column(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: AppColors.cardBg,
-                            borderRadius: BorderRadius.circular(AppSizes.radiusXXL),
+                      const SizedBox(height: 8),
+                      Text(source.name, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        height: 32,
+                        child: OutlinedButton(
+                          onPressed: () => setState(() => source.isFollowing = !source.isFollowing),
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: source.isFollowing ? AppColors.primary : Colors.transparent,
+                            side: const BorderSide(color: AppColors.primary),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
                           ),
-                          child: Column(
-                            children: [
-                              Container(
-                                width: double.infinity,
-                                height: 95,
-                                decoration: BoxDecoration(
-                                  color: AppColors.cardInner,
-                                  borderRadius: BorderRadius.circular(AppSizes.radiusXXL),
-                                ),
-                                child: Center(
-                                  child: ClipOval(
-                                    child: Image.asset(
-                                      source.logo,
-                                      width: 80,
-                                      height: 80,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: AppSizes.spacingM),
-                              Text(source.name, textAlign: TextAlign.center, style: AppTextStyles.sourceName),
-                              const SizedBox(height: AppSizes.spacingM),
-                              GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    source.isFollowing = !source.isFollowing;
-                                  });
-                                },
-                                child: Container(
-                                  width: 95,
-                                  padding: const EdgeInsets.symmetric(vertical: 8),
-                                  decoration: BoxDecoration(
-                                    color: source.isFollowing ? AppColors.primary : AppColors.white,
-                                    borderRadius: BorderRadius.circular(AppSizes.radiusL),
-                                    border: Border.all(color: AppColors.primary),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      source.isFollowing ? AppStrings.following : AppStrings.follow,
-                                      style: source.isFollowing
-                                          ? AppTextStyles.followingButton
-                                          : AppTextStyles.followButton,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            source.isFollowing ? AppStrings.following : AppStrings.follow,
+                            style: TextStyle(color: source.isFollowing ? Colors.white : AppColors.primary, fontSize: 12),
                           ),
                         ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-
-              AppButton(
-                text: AppStrings.next,
-                isEnabled: hasSelection,
-                onPressed: () {
-                  Navigator.pushNamed(context, AppRouter.fillProfile);
+                      ),
+                    ],
+                  );
                 },
               ),
-
-              const SizedBox(height: AppSizes.spacingXL),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+            AppPrimaryButton(
+              text: AppStrings.next,
+              onPressed: hasSelection ? () {
+                final country = ModalRoute.of(context)?.settings.arguments as String? ?? '';
+                Navigator.pushNamed(context, AppRouter.fillProfile, arguments: country);
+              } : null,
+            ),
+            const SizedBox(height: AppSizes.spacingXL),
+          ],
         ),
       ),
     );

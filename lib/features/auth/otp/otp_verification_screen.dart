@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,6 +10,8 @@ import 'package:news_ui_kit/core/theme/app_text_styles.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_event.dart';
 import 'package:news_ui_kit/features/auth/presentation/bloc/auth_state.dart';
+import 'package:news_ui_kit/core/widgets/app_ui_kit.dart';
+import 'package:news_ui_kit/core/widgets/web_constrained_layout.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String contact;
@@ -21,9 +23,7 @@ class OtpVerificationScreen extends StatefulWidget {
 }
 
 class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
-  final List<TextEditingController> controllers =
-      List.generate(4, (_) => TextEditingController());
-
+  final List<TextEditingController> controllers = List.generate(4, (_) => TextEditingController());
   int secondsRemaining = 60;
   Timer? timer;
 
@@ -36,9 +36,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   void startTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (secondsRemaining > 0) {
-        setState(() {
-          secondsRemaining--;
-        });
+        setState(() => secondsRemaining--);
       } else {
         timer.cancel();
       }
@@ -46,6 +44,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   }
 
   Widget buildOtpBox(int index, String? otpError) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       width: AppSizes.otpBoxSize,
       height: AppSizes.otpBoxSize,
@@ -55,33 +54,26 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         maxLength: 1,
         textAlign: TextAlign.center,
-        style: AppTextStyles.otpDigit,
+        style: AppTextStyles.otpDigit(context),
         decoration: InputDecoration(
           counterText: "",
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusM),
-          ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSizes.radiusM),
             borderSide: BorderSide(
-              color: otpError != null ? AppColors.error : AppColors.greyBorder,
+              color: otpError != null ? AppColors.error : colorScheme.outline,
             ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppSizes.radiusM),
             borderSide: BorderSide(
-              color: otpError != null ? AppColors.error : AppColors.primary,
+              color: otpError != null ? AppColors.error : colorScheme.primary,
               width: 1.5,
             ),
           ),
         ),
         onChanged: (value) {
-          if (value.isNotEmpty && index < 3) {
-            FocusScope.of(context).nextFocus();
-          }
-          if (value.isEmpty && index > 0) {
-            FocusScope.of(context).previousFocus();
-          }
+          if (value.isNotEmpty && index < 3) FocusScope.of(context).nextFocus();
+          if (value.isEmpty && index > 0) FocusScope.of(context).previousFocus();
         },
       ),
     );
@@ -98,93 +90,70 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => AuthBloc(),
-      child: BlocConsumer<AuthBloc, AuthState>(
-        listener: (context, state) {
-          if (state.isSuccess) {
-            Navigator.pushNamed(context, AppRouter.resetPassword);
-          }
-        },
-        builder: (context, state) {
-          return Scaffold(
-            backgroundColor: AppColors.white,
-            appBar: AppBar(),
-            body: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
-                child: Column(
-                  children: [
-                    const SizedBox(height: AppSizes.spacingXL),
-                    const Text(AppStrings.otpVerification, style: AppTextStyles.headingOtp),
-                    const SizedBox(height: AppSizes.spacingSM),
-
-                    Text(
-                      "${AppStrings.enterOtpSentTo}${widget.contact}",
-                      textAlign: TextAlign.center,
-                      style: AppTextStyles.bodyMedium,
-                    ),
-
-                    const SizedBox(height: AppSizes.spacingXXL),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        4,
-                        (index) => Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: buildOtpBox(index, state.otpError),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSizes.spacingS),
-
-                    if (state.otpError != null)
-                      Text(state.otpError!, style: AppTextStyles.error),
-
-                    const SizedBox(height: AppSizes.spacingXL),
-
-                    RichText(
-                      text: TextSpan(
-                        text: AppStrings.resendCodeIn,
-                        style: AppTextStyles.bodySmall,
-                        children: [
-                          TextSpan(
-                            text: "${secondsRemaining}s",
-                            style: const TextStyle(
-                              color: AppColors.error,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          context.read<AuthBloc>().add(
-                            OtpSubmitted(
-                              otpDigits: controllers.map((c) => c.text).toList(),
-                            ),
-                          );
-                        },
-                        child: const Text(AppStrings.verify),
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSizes.spacingXL),
-                  ],
+    return BlocConsumer<AuthBloc, AuthState>(
+      listener: (context, state) {
+        if (state.isSuccess) Navigator.pushNamed(context, AppRouter.resetPassword);
+      },
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+          body: WebConstrainedLayout(
+            maxWidth: 500,
+            padding: const EdgeInsets.symmetric(horizontal: AppSizes.screenPaddingH),
+            child: Column(
+              children: [
+                const SizedBox(height: AppSizes.spacingXL),
+                Text(AppStrings.otpVerification, style: AppTextStyles.headingOtp(context)),
+                const SizedBox(height: AppSizes.spacingSM),
+                Text(
+                  "${AppStrings.enterOtpSentTo}${widget.contact}",
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodyMedium(context),
                 ),
-              ),
+                const SizedBox(height: AppSizes.spacingXXL),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    4,
+                    (index) => Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: buildOtpBox(index, state.otpError),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppSizes.spacingS),
+                if (state.otpError != null)
+                  Text(state.otpError!, style: AppTextStyles.error(context)),
+                const SizedBox(height: AppSizes.spacingXL),
+                RichText(
+                  text: TextSpan(
+                    text: AppStrings.resendCodeIn,
+                    style: AppTextStyles.bodySmall(context),
+                    children: [
+                      TextSpan(
+                        text: "${secondsRemaining}s",
+                        style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSizes.spacingHuge),
+                AppPrimaryButton(
+                  text: AppStrings.verify,
+                  isLoading: state.isLoading,
+                  onPressed: () {
+                    context.read<AuthBloc>().add(
+                          OtpSubmitted(otpDigits: controllers.map((c) => c.text).toList()),
+                        );
+                  },
+                ),
+                const SizedBox(height: AppSizes.spacingXL),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        );
+      },
     );
   }
 }

@@ -11,11 +11,15 @@ class AuthState extends Equatable {
   // For forgot password → pass validated contact to OTP screen
   final String? validatedContact;
 
+  // For login/signup flow redirection
+  final bool hasProfile;
+
   const AuthState({
     this.errors = const {},
     this.isLoading = false,
     this.isSuccess = false,
     this.validatedContact,
+    this.hasProfile = false,
   });
 
   // Initial state
@@ -27,12 +31,14 @@ class AuthState extends Equatable {
     bool? isLoading,
     bool? isSuccess,
     String? validatedContact,
+    bool? hasProfile,
   }) {
     return AuthState(
       errors: errors ?? this.errors,
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
       validatedContact: validatedContact ?? this.validatedContact,
+      hasProfile: hasProfile ?? this.hasProfile,
     );
   }
 
@@ -45,5 +51,5 @@ class AuthState extends Equatable {
   String? get newPasswordError => errors['newPassword'];
 
   @override
-  List<Object?> get props => [errors, isLoading, isSuccess, validatedContact];
+  List<Object?> get props => [errors, isLoading, isSuccess, validatedContact, hasProfile];
 }
